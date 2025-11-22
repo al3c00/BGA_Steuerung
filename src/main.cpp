@@ -45,8 +45,9 @@ int main()
 	GUI main_gui(&logger, &renderer);
 	
 
-
-
+	main_gui.loadFont("ARIA_Black", "/fonts/arial.ttf", 0, 0, 0);
+	main_gui.loadFont("ARIAL_Black", "/fonts/arial.ttf", 0, 0, 0);
+	main_gui.loadTexture("Schema", "/resource/schema_bga_v2.png");
 
 
 	//Main loop
@@ -56,24 +57,29 @@ int main()
 	//	show things
 	//}
 	main_gui.setBackGroundColor(175, 175, 175);
-	main_gui.loadTexture("Schema", "/resource/schema_bga_v2.png");
+	
+	do
+	{
+		
+		renderer.clearRender();
+		//m_p_renderer->prepareRender();
 
-	renderer.clearRender();
-	//m_p_renderer->prepareRender();
-
-	//main_gui.drawBackGroundColor();
-	main_gui.drawPreloadedTexture(0, 0, 800, 480, "Schema");
-	//main_gui.drawText_l(50, 200, "Hello World");
-	//main_gui.drawText_r(430, 150, "Hello World");
-	//main_gui.TESTDRAWTEXT();
+		//main_gui.drawBackGroundColor();
+		main_gui.drawPreloadedTexture(0, 0, 800, 480, "Schema");
+		main_gui.drawText_l(50, 200, "Hello World", "ARIAL_Black");
+		main_gui.drawText_l(80, 400, "Hello World", "ARIAL_Black");
+		main_gui.drawText_l(345, 150, 485, "ARIAL_Black");
 
 
-	renderer.Show();
 
+		renderer.Show();
+
+		//SDL_Delay(15000);
+
+	} while (true);
 
 	std::cout << "Hello" << std::endl;
 
-	TTF_CloseFont
 
 	logger.writeLog(LogLevel::INFO, log_origin, "SUCCESSFUL");
 

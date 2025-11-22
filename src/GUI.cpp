@@ -1,6 +1,14 @@
 #include "GUI.h"
 
-int GUI::ammount_loaded_fonts = 0;
+SDL_Surface* GUI::s_m_p_ascii_symbols_surface_buffer[94] = { 0 };
+std::map<char, SDL_Surface*> GUI::s_m_font_map_SURFACE;
+
+SDL_Texture* GUI::s_m_p_ascii_symbols_texture_buffer[94] = {0};
+std::map<char, SDL_Texture*> GUI::s_m_font_map_TEXTURE;
+
+std::map<std::string, std::map<char, SDL_Texture*>> GUI::s_m_font_collection;
+
+SDL_Color GUI::s_m_SDL_font_color;
 
 GUI::GUI(Log* logger, Render* renderer)
 {
@@ -69,7 +77,7 @@ void GUI::drawPreloadedTexture(int x_pos, int y_pos, int height, int width, std:
 
 
 
-void GUI::drawText_l(int x_pos, int y_pos, std::string text)
+void GUI::drawText_l(int x_pos, int y_pos, std::string text, std::string font)
 {
 	int nmbr_of_characters = text.length();
 	
@@ -79,12 +87,13 @@ void GUI::drawText_l(int x_pos, int y_pos, std::string text)
 
 	int symbol_width = 0;
 	int symbol_height = 0;
+
 	for (int i = 0; i < nmbr_of_characters; i++)
 	{
 		char single_symbol = text.at(i);
 		//std::cout << "Single symbol: " <<single_symbol << std::endl;
 		
-		if (SDL_QueryTexture(m_font_map_TEXTURE.at(single_symbol), NULL, NULL, &symbol_width, &symbol_height) < 0)
+		if (SDL_QueryTexture(s_m_font_collection.at(font).at(single_symbol), NULL, NULL, &symbol_width, &symbol_height) < 0)
 		{
 			m_p_logger->writeLog(LogLevel::ERROR, m_log_origin + " SDL_QUERY_TEXTURE", SDL_GetError());
 		}
@@ -92,7 +101,7 @@ void GUI::drawText_l(int x_pos, int y_pos, std::string text)
 		rect_text.w = symbol_width;
 		rect_text.h = symbol_height;
 
-		if (SDL_RenderCopy(m_p_render_instance->getRenderer(), m_font_map_TEXTURE.at(single_symbol), NULL, &rect_text) < 0)
+		if (SDL_RenderCopy(m_p_render_instance->getRenderer(), s_m_font_collection.at(font).at(single_symbol), NULL, &rect_text) < 0)
 		{
 			std::cout << "Error SDL_RenderCopy" << std::endl;
 			m_p_logger->writeLog(LogLevel::ERROR, m_log_origin + " DRAW-TEXT__SDL_RENDER_COPY", SDL_GetError());
@@ -102,16 +111,16 @@ void GUI::drawText_l(int x_pos, int y_pos, std::string text)
 		rect_text.x += rect_text.w;
 	}
 	
-	
+	std::cout << "Text height: " << rect_text.h << std::endl;
 
 }
 
-void GUI::drawText_l(int x_pos, int y_pos, int numbers)
+void GUI::drawText_l(int x_pos, int y_pos, int numbers, std::string font)
 {
-	drawText_l(x_pos, y_pos, std::to_string(numbers));
+	drawText_l(x_pos, y_pos, std::to_string(numbers), font);
 }
 
-void GUI::drawText_r(int x_pos, int y_pos, std::string text)
+void GUI::drawText_r(int x_pos, int y_pos, std::string text, std::string font)
 {
 	int nmbr_of_characters = text.length();
 
@@ -129,7 +138,7 @@ void GUI::drawText_r(int x_pos, int y_pos, std::string text)
 	{
 		char single_symbol = text.at(i);
 
-		if (SDL_QueryTexture(m_font_map_TEXTURE.at(single_symbol), NULL, NULL, &symbol_width, &symbol_height) < 0)
+		if (SDL_QueryTexture(s_m_font_collection.at(font).at(single_symbol), NULL, NULL, &symbol_width, &symbol_height) < 0)
 		{
 			m_p_logger->writeLog(LogLevel::ERROR, m_log_origin + " SDL_QUERY_TEXTURE", SDL_GetError());
 		}
@@ -144,7 +153,7 @@ void GUI::drawText_r(int x_pos, int y_pos, std::string text)
 		char single_symbol = text.at(i);
 		//std::cout << "Single symbol: " << single_symbol << std::endl;
 
-		if (SDL_QueryTexture(m_font_map_TEXTURE.at(single_symbol), NULL, NULL, &symbol_width, &symbol_height) < 0)
+		if (SDL_QueryTexture(s_m_font_collection.at(font).at(single_symbol), NULL, NULL, &symbol_width, &symbol_height) < 0)
 		{
 			m_p_logger->writeLog(LogLevel::ERROR, m_log_origin + " SDL_QUERY_TEXTURE", SDL_GetError());
 		}
@@ -152,7 +161,7 @@ void GUI::drawText_r(int x_pos, int y_pos, std::string text)
 		rect_text.w = symbol_width;
 		rect_text.h = symbol_height;
 
-		if (SDL_RenderCopy(m_p_render_instance->getRenderer(), m_font_map_TEXTURE.at(single_symbol), NULL, &rect_text) < 0)
+		if (SDL_RenderCopy(m_p_render_instance->getRenderer(), s_m_font_collection.at(font).at(single_symbol), NULL, &rect_text) < 0)
 		{
 			std::cout << "Error SDL_RenderCopy" << std::endl;
 			m_p_logger->writeLog(LogLevel::ERROR, m_log_origin + " DRAW-TEXT__SDL_RENDER_COPY", SDL_GetError());
@@ -166,9 +175,9 @@ void GUI::drawText_r(int x_pos, int y_pos, std::string text)
 
 }
 
-void GUI::drawText_r(int x_pos, int y_pos, int numbers)
+void GUI::drawText_r(int x_pos, int y_pos, int numbers, std::string font)
 {
-	drawText_r(x_pos, y_pos, std::to_string(numbers));
+	drawText_r(x_pos, y_pos, std::to_string(numbers), font);
 }
 
 void GUI::loadTexture(std::string name, std::string path)
@@ -177,25 +186,29 @@ void GUI::loadTexture(std::string name, std::string path)
 	m_preloaded_textures_map.insert({ name, IMG_LoadTexture(m_p_render_instance->getRenderer(), temp_path.c_str()) });
 }
 
-void GUI::loadFont(std::string name, std::string path, int r, int g, int b, int size)
+void GUI::loadFont(std::string name, std::string path, int r, int g, int b)
 {
-	int font_nmbr = s_m_ammount_loaded_fonts;
+
 
 	//Load TTF_Font
-	s_m_p_SDL_font = TTF_OpenFont((getProjectDirPath() + path).c_str(), size);
-	if (!s_m_p_SDL_font)
+	m_p_SDL_font = TTF_OpenFont((getProjectDirPath() + path).c_str(),15);
+	if (!m_p_SDL_font)
 	{
 		m_p_logger->writeLog(LogLevel::ERROR, m_log_origin + " TTF_OPEN_FONT", SDL_GetError());
 	}
 
-	
+	s_m_SDL_font_color.r = r;
+	s_m_SDL_font_color.g = g;
+	s_m_SDL_font_color.b = b;
 
-	m_initializeFontMap(name);
+	m_insertFontInMap(name);
+
+	TTF_CloseFont(m_p_SDL_font);
 }
 
 void GUI::TESTDRAWTEXT()
 {
-	SDL_Surface* surface = TTF_RenderUTF8_Solid(s_m_p_SDL_font, "TEST", m_SDL_color_black);
+	SDL_Surface* surface = TTF_RenderUTF8_Solid(m_p_SDL_font, "TEST", m_SDL_color_black);
 	SDL_Texture* Message = SDL_CreateTextureFromSurface(m_p_render_instance->getRenderer(), surface);
 	SDL_Rect Message_rect; //create a rect
 	Message_rect.x = 100;  //controls the rect's x coordinate 
@@ -206,7 +219,7 @@ void GUI::TESTDRAWTEXT()
 	SDL_RenderCopy(m_p_render_instance->getRenderer(), Message, NULL, &Message_rect);
 }
 
-void GUI::m_initializeFontMap(std::string name)
+void GUI::m_insertFontInMap(std::string name)
 {
 	//The first visible character in the ascii table i "!" at DEC33, the last is "~" at DEC 126
 	//DEC32 (Space) is also included '!' has ASCII Code DEC33
@@ -217,7 +230,9 @@ void GUI::m_initializeFontMap(std::string name)
 		const char* symbol_for_Render = buf;
 		std::cout << symbol_for_Render << std::endl;
 
-		s_m_font_map_SURFACE.insert({temp, TTF_RenderUTF8_Solid(s_m_p_SDL_font, symbol_for_Render, m_SDL_color_black)});
+		s_m_font_map_SURFACE.insert({ temp, TTF_RenderUTF8_Solid(m_p_SDL_font, symbol_for_Render, s_m_SDL_font_color)});
+
+
 	}
 		
 
@@ -227,13 +242,12 @@ void GUI::m_initializeFontMap(std::string name)
 
 		std::cout << temp << std::endl;
 
-		s_m_font_map_TEXTURE.insert({temp, SDL_CreateTextureFromSurface(m_p_render_instance->getRenderer(), s_m_font_map_SURFACE.at(temp))});
+		s_m_font_map_TEXTURE.insert({ temp, SDL_CreateTextureFromSurface(m_p_render_instance->getRenderer(), s_m_font_map_SURFACE.at(temp)) });
 	}
 
-	s_m_font_texture_collection.insert({ name, s_m_font_map_TEXTURE });
+	s_m_font_collection.insert({ name, s_m_font_map_TEXTURE });
 
-
-	TTF_CloseFont(s_m_p_SDL_font);
+	
 	
 }
 

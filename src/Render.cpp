@@ -56,9 +56,8 @@ void Render::prepareRender()
 void Render::Show()
 {
 	
-	
 	SDL_RenderPresent(m_SDLrenderer);
-	SDL_Delay(15000);
+
 }
 
 SDL_Rect Render::getDisplaySize()

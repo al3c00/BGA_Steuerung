@@ -2,6 +2,7 @@
 
 
 
+
 Log::Log(std::string path_from_main_dir)
 {
 	std::filesystem::path project_dir = std::filesystem::current_path().parent_path().parent_path().parent_path();
