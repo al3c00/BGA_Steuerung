@@ -26,7 +26,12 @@ public:
 	void drawBackGroundColor();
 	void drawObject(int x_pos, int y_pos, int height, int width, std::string path);
 	void drawObject(int x_pos, int y_pos, int height, int width, int r, int g, int b);
+
 	void drawPreloadedTexture(int x_pos, int y_pos, int height, int width, std::string name);
+	void drawPreloadedTexture(int x_pos, int y_pos, int height, int width, int rotation, std::string name);
+
+	void drawPreloadedTextureXYWH(std::string prepared_xy_name,  std::string name);
+	void drawPreloadedTextureXYWH(std::string prepared_xy_name, int rotation, std::string name);
 
 	//@brief Function to draw the text in the backbuffer
 	//@param x_pos x-Position (Bottom left of the text element)
@@ -44,6 +49,22 @@ public:
 	void drawText_r(int x_pos, int y_pos, std::string text, std::string font);
 	void drawText_r(int x_pos, int y_pos, int numbers, std::string font);
 
+	//@brief Function to write a position (x and y value) of an object that needs frequent texture changing into a map
+	//@param xpos X-Position of the object
+	//@param ypos Y-Position of the object
+	//@param width Width of the object
+	//@param height Height of the object
+	//@param name Name of the object (refer with the same in the function drawPreloadedTextureXYWH)
+	void prepareXYWHPosition(int xpos, int ypos, int width, int height, std::string name);
+
+
+	//@brief Loads the given position and size attributes from a text file and stores them into a map
+	//@brief Basicly the same functionality as prepareXYWHPosition, except, that the positions are read from a file
+	//@brief How to write the file: #Object_Name (refer with the same in the function drawPreloadedTextureXYWH) NEWLINE { NEWLINE xposXX,yposYY,wdataWW,hdataHH NEWLINE }
+	//@brief Don't write empty spaces between the bracelets
+	//@param path Path to the file
+	void loadXYWHPosition(std::string path);
+
 	//@brief Function to preload textures into a map
 	//@param name Key(name) to refer to the texture
 	//@param path Path to the texture
@@ -57,22 +78,27 @@ public:
 	//@param r,g,b The font color
 	void loadFont(std::string name, std::string path, int r, int g, int b);
 
-	void TESTDRAWTEXT();
+	
+
+	//void TESTDRAWTEXT();
 
 
 private:
+
+	Render* m_p_render_instance;
+	Log* m_p_logger;
+
+	//Font Handling
+
 	//@brief Create a SDL_Surface and from that an SDL_Texture instance for every visible symbol in the ascii table (DEC33-DEC126)
 	//@brief The instances ar saved in a map (font_map) and can be called by runtime to display text dynamicly. The key is a char type
 	//@brief DEC32 (Space) is also included
 	void m_insertFontInMap(std::string name);
 
-
-	
-	//Font Handling
 	TTF_Font* m_p_SDL_font;//Pointer to a opened font 
 	
 	static SDL_Surface* s_m_p_ascii_symbols_surface_buffer[94];
-	static std::map<char, SDL_Surface*> s_m_font_map_SURFACE;
+	static std::vector<SDL_Surface*> s_m_font_vector_SURFACE;
 
 	static SDL_Texture* s_m_p_ascii_symbols_texture_buffer[94];
 	static std::map<char, SDL_Texture*> s_m_font_map_TEXTURE;
@@ -83,22 +109,28 @@ private:
 	//End Font Handling
 
 
-	Render* m_p_render_instance;
-	Log* m_p_logger;
 
 	
-	std::map<std::string, SDL_Texture*> m_preloaded_textures_map;
+
+
 	
-
-
-	SDL_Color m_SDL_color_black;
+	std::map<std::string, SDL_Texture*> m_preloaded_textures_collection;
+	
+	struct Element_Coordinates
+	{
+		int xpos;
+		int ypos;
+		int width;
+		int height;
+	}m_element_coordinates;
+	std::map<std::string, Element_Coordinates> m_element_position_collection;//"Pre"store positions of elements that need to be changed. E.g. valve state texture
 
 	SDL_Surface* m_background_surface;
 	SDL_Texture* m_background_texture;
 	SDL_Color m_SDL_color_background;
 	SDL_Rect m_background_rect;
 	
-	std::string getProjectDirPath();
+	std::string m_getProjectDirPath();
 
 	std::string m_log_origin;
 };

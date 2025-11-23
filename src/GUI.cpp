@@ -1,7 +1,7 @@
 #include "GUI.h"
 
 SDL_Surface* GUI::s_m_p_ascii_symbols_surface_buffer[94] = { 0 };
-std::map<char, SDL_Surface*> GUI::s_m_font_map_SURFACE;
+std::vector<SDL_Surface*> GUI::s_m_font_vector_SURFACE;
 
 SDL_Texture* GUI::s_m_p_ascii_symbols_texture_buffer[94] = {0};
 std::map<char, SDL_Texture*> GUI::s_m_font_map_TEXTURE;
@@ -72,7 +72,36 @@ void GUI::drawPreloadedTexture(int x_pos, int y_pos, int height, int width, std:
 	draw_rect.y = y_pos;
 	draw_rect.h = height;
 	draw_rect.w = width;
-	SDL_RenderCopy(m_p_render_instance->getRenderer(), m_preloaded_textures_map.at(name), NULL, &draw_rect);
+	if (SDL_RenderCopy(m_p_render_instance->getRenderer(), m_preloaded_textures_collection.at(name), NULL, &draw_rect) < 0)
+	{
+		m_p_logger->writeLog(LogLevel::ERROR, m_log_origin + " SDL_RenderCopy" + " | Object: " + name, SDL_GetError());
+	}
+}
+
+void GUI::drawPreloadedTexture(int x_pos, int y_pos, int height, int width, int rotation, std::string name)
+{
+	SDL_Rect draw_rect;
+	draw_rect.x = x_pos;
+	draw_rect.y = y_pos;
+	draw_rect.h = height;
+	draw_rect.w = width;
+	if (SDL_RenderCopyEx(m_p_render_instance->getRenderer(), m_preloaded_textures_collection.at(name), NULL, &draw_rect, rotation, NULL, SDL_FLIP_NONE) < 0)
+	{
+		m_p_logger->writeLog(LogLevel::ERROR, m_log_origin + " SDL_RenderCopyEx" + " | Object: " + name, SDL_GetError());
+	}
+}
+
+void GUI::drawPreloadedTextureXYWH(std::string prepared_xy_name, std::string name)
+{
+	
+	drawPreloadedTexture(m_element_position_collection.at(prepared_xy_name).xpos, m_element_position_collection.at(prepared_xy_name).ypos, m_element_position_collection.at(prepared_xy_name).width,
+		m_element_position_collection.at(prepared_xy_name).height, name);
+}
+
+void GUI::drawPreloadedTextureXYWH(std::string prepared_xy_name, int rotation, std::string name)
+{
+	drawPreloadedTexture(m_element_position_collection.at(prepared_xy_name).xpos, m_element_position_collection.at(prepared_xy_name).ypos, m_element_position_collection.at(prepared_xy_name).width,
+		m_element_position_collection.at(prepared_xy_name).height, rotation, name);
 }
 
 
@@ -111,7 +140,7 @@ void GUI::drawText_l(int x_pos, int y_pos, std::string text, std::string font)
 		rect_text.x += rect_text.w;
 	}
 	
-	std::cout << "Text height: " << rect_text.h << std::endl;
+	//std::cout << "Text height: " << rect_text.h << std::endl;
 
 }
 
@@ -180,10 +209,119 @@ void GUI::drawText_r(int x_pos, int y_pos, int numbers, std::string font)
 	drawText_r(x_pos, y_pos, std::to_string(numbers), font);
 }
 
+void GUI::prepareXYWHPosition(int xpos, int ypos, int width, int height, std::string name)
+{
+	m_element_coordinates.xpos = xpos;
+	m_element_coordinates.ypos = ypos;
+	m_element_coordinates.width = width;
+	m_element_coordinates.height = height;
+
+	m_element_position_collection.insert({ name, m_element_coordinates});
+}
+
+void GUI::loadXYWHPosition(std::string path)
+{
+	std::string temp;
+	std::string single_character;
+	std::string object_name;
+
+	enum struct VARIANTS{XPOS = 0, YPOS = 1, WDATA = 2, HDATA = 3} variants;
+
+	std::ifstream object_position_file(m_getProjectDirPath() + path);
+	object_position_file.seekg(0, object_position_file.end);
+	int length = object_position_file.tellg();
+	object_position_file.seekg(0, object_position_file.beg);
+
+	char* buffer = new char[length];
+
+	m_p_logger->writeLog(LogLevel::INFO, m_log_origin + " LOAD_XYWH_DATA", "Reading: " + std::to_string(length) + " characters");
+
+	object_position_file.read(buffer, length);
+
+	object_position_file.close();
+
+	//Unsafe, file could be corrupted!!
+	for (int i = 0; i < length; i++)
+	{
+		single_character = buffer[i];
+
+		if (single_character != "#" && single_character != "{" && single_character != "}" && single_character != "," && single_character != "\n" && single_character != "\r")
+		{
+			temp.append(single_character);
+		}
+
+		//Check if a variant code word had been read (xpos,ypos,wdata,hdata). If yes clear string and prepare to read and store actual data in struct
+		{
+			if (temp == "xpos")
+			{
+				variants = VARIANTS::XPOS;
+				temp.clear();
+			}
+			else if (temp == "ypos")
+			{
+				variants = VARIANTS::YPOS;
+				temp.clear();
+			}
+			else if (temp == "wdata")
+			{
+				variants = VARIANTS::WDATA;
+				temp.clear();
+			}
+			else if (temp == "hdata")
+			{
+				variants = VARIANTS::HDATA;
+				temp.clear();
+			}
+		}
+
+		if (single_character == "{")
+		{
+			object_name = temp;
+			temp.clear();
+		}
+		if (single_character == ",")
+		{
+			switch (variants)
+			{
+			case VARIANTS::XPOS:
+			{
+				m_element_coordinates.xpos = std::stoi(temp);
+				temp.clear();
+			}break;
+			case VARIANTS::YPOS:
+			{
+				m_element_coordinates.ypos = std::stoi(temp);
+				temp.clear();
+			}break;
+			case VARIANTS::WDATA:
+			{
+				m_element_coordinates.width = std::stoi(temp);
+				temp.clear();
+			}break;
+			case VARIANTS::HDATA: //Will not be used. No comma follows the hdata. Struct member will be filled when "}" is read
+			{
+				m_element_coordinates.height = std::stoi(temp);
+				temp.clear();
+			}break;
+			default:
+				break;
+			}
+		}
+		if (single_character == "}")
+		{
+			m_element_coordinates.height = std::stoi(temp);
+			temp.clear();
+			m_element_position_collection.insert({ object_name, m_element_coordinates });
+		}
+		
+
+	}
+}
+
 void GUI::loadTexture(std::string name, std::string path)
 {
-	std::string temp_path = getProjectDirPath() + path;
-	m_preloaded_textures_map.insert({ name, IMG_LoadTexture(m_p_render_instance->getRenderer(), temp_path.c_str()) });
+	std::string temp_path = m_getProjectDirPath() + path;
+	m_preloaded_textures_collection.insert({ name, IMG_LoadTexture(m_p_render_instance->getRenderer(), temp_path.c_str()) });
 }
 
 void GUI::loadFont(std::string name, std::string path, int r, int g, int b)
@@ -191,7 +329,7 @@ void GUI::loadFont(std::string name, std::string path, int r, int g, int b)
 
 
 	//Load TTF_Font
-	m_p_SDL_font = TTF_OpenFont((getProjectDirPath() + path).c_str(),15);
+	m_p_SDL_font = TTF_OpenFont((m_getProjectDirPath() + path).c_str(),15);
 	if (!m_p_SDL_font)
 	{
 		m_p_logger->writeLog(LogLevel::ERROR, m_log_origin + " TTF_OPEN_FONT", SDL_GetError());
@@ -206,18 +344,18 @@ void GUI::loadFont(std::string name, std::string path, int r, int g, int b)
 	TTF_CloseFont(m_p_SDL_font);
 }
 
-void GUI::TESTDRAWTEXT()
-{
-	SDL_Surface* surface = TTF_RenderUTF8_Solid(m_p_SDL_font, "TEST", m_SDL_color_black);
-	SDL_Texture* Message = SDL_CreateTextureFromSurface(m_p_render_instance->getRenderer(), surface);
-	SDL_Rect Message_rect; //create a rect
-	Message_rect.x = 100;  //controls the rect's x coordinate 
-	Message_rect.y = 100; // controls the rect's y coordinte
-	Message_rect.w = 100; // controls the width of the rect
-	Message_rect.h = 100; // controls the height of the rect
-
-	SDL_RenderCopy(m_p_render_instance->getRenderer(), Message, NULL, &Message_rect);
-}
+//void GUI::TESTDRAWTEXT()
+//{
+//	SDL_Surface* surface = TTF_RenderUTF8_Solid(m_p_SDL_font, "TEST", m_SDL_color_black);
+//	SDL_Texture* Message = SDL_CreateTextureFromSurface(m_p_render_instance->getRenderer(), surface);
+//	SDL_Rect Message_rect; //create a rect
+//	Message_rect.x = 100;  //controls the rect's x coordinate 
+//	Message_rect.y = 100; // controls the rect's y coordinte
+//	Message_rect.w = 100; // controls the width of the rect
+//	Message_rect.h = 100; // controls the height of the rect
+//
+//	SDL_RenderCopy(m_p_render_instance->getRenderer(), Message, NULL, &Message_rect);
+//}
 
 void GUI::m_insertFontInMap(std::string name)
 {
@@ -230,7 +368,7 @@ void GUI::m_insertFontInMap(std::string name)
 		const char* symbol_for_Render = buf;
 		std::cout << symbol_for_Render << std::endl;
 
-		s_m_font_map_SURFACE.insert({ temp, TTF_RenderUTF8_Solid(m_p_SDL_font, symbol_for_Render, s_m_SDL_font_color)});
+		s_m_font_vector_SURFACE.push_back(TTF_RenderUTF8_Solid(m_p_SDL_font, symbol_for_Render, s_m_SDL_font_color));
 
 
 	}
@@ -242,7 +380,7 @@ void GUI::m_insertFontInMap(std::string name)
 
 		std::cout << temp << std::endl;
 
-		s_m_font_map_TEXTURE.insert({ temp, SDL_CreateTextureFromSurface(m_p_render_instance->getRenderer(), s_m_font_map_SURFACE.at(temp)) });
+		s_m_font_map_TEXTURE.insert({ temp, SDL_CreateTextureFromSurface(m_p_render_instance->getRenderer(), s_m_font_vector_SURFACE.at(i))});
 	}
 
 	s_m_font_collection.insert({ name, s_m_font_map_TEXTURE });
@@ -253,7 +391,7 @@ void GUI::m_insertFontInMap(std::string name)
 
 
 
-std::string GUI::getProjectDirPath()
+std::string GUI::m_getProjectDirPath()
 {
 	std::filesystem::path project_dir = std::filesystem::current_path().parent_path().parent_path().parent_path();
 	return project_dir.string();
