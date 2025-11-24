@@ -109,6 +109,20 @@ private:
 	//End Font Handling
 
 
+	//Struct that holds information about the drawn elements.
+	//Fill in the information in the "draw" call
+	struct DrawnElements
+	{
+		std::string name;
+		int xpos;
+		int ypos;
+		int width;
+		int height;
+		bool selectable;
+
+	}m_drawn_elements_list;
+
+	std::vector<DrawnElements> m_drawn_elements_list_vector;
 
 	
 
@@ -123,6 +137,7 @@ private:
 		int width;
 		int height;
 	}m_element_coordinates;
+
 	std::map<std::string, Element_Coordinates> m_element_position_collection;//"Pre"store positions of elements that need to be changed. E.g. valve state texture
 
 	SDL_Surface* m_background_surface;
