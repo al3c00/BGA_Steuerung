@@ -114,6 +114,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="src\GUI.cpp" />
+    <ClCompile Include="src\HW_Con.cpp" />
     <ClCompile Include="src\Log.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Render.cpp" />
@@ -125,6 +126,7 @@
     </ClInclude>
     <ClInclude Include="src\defines.h" />
     <ClInclude Include="src\GUI.h" />
+    <ClInclude Include="src\HW_Con.h" />
     <ClInclude Include="src\Log.h" />
     <ClInclude Include="src\Render.h" />
   </ItemGroup>

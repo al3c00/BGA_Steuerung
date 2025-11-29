@@ -27,6 +27,7 @@ Render::Render(Log* logger, SDL_Window* window)
 		}
 	}
 
+	SDL_SetRenderDrawBlendMode(m_SDLrenderer, SDL_BLENDMODE_BLEND);
 
 	std::cout << "Created Renderer" << m_SDLrenderer << std::endl;
 

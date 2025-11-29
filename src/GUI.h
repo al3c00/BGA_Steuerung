@@ -9,6 +9,7 @@
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_image.h>
+//#include <SDL2/SDL_blendmode.h>
 
 
 #include "Log.h"
@@ -22,16 +23,22 @@ class GUI
 public:
 	GUI(Log* logger, Render* renderer);
 
-	void setBackGroundColor(int r, int g, int b);//Set the Background color
-	void drawBackGroundColor();
+	
+	void drawBackGroundColor(int r, int g, int b);
 	void drawObject(int x_pos, int y_pos, int height, int width, std::string path);
 	void drawObject(int x_pos, int y_pos, int height, int width, int r, int g, int b);
+	//void drawObject(int x_pos, int y_pos, int height, int width, int r, int g, int b, int a);
 
 	void drawPreloadedTexture(int x_pos, int y_pos, int height, int width, std::string name);
 	void drawPreloadedTexture(int x_pos, int y_pos, int height, int width, int rotation, std::string name);
 
 	void drawPreloadedTextureXYWH(std::string prepared_xy_name,  std::string name);
 	void drawPreloadedTextureXYWH(std::string prepared_xy_name, int rotation, std::string name);
+	void drawPreloadedTextureXYWH(std::string prepared_xy_name, int state);
+
+
+	//@brief Function to draw a rectangle arround the currently selected object
+	void drawCursor();
 
 	//@brief Function to draw the text in the backbuffer
 	//@param x_pos x-Position (Bottom left of the text element)
@@ -78,7 +85,8 @@ public:
 	//@param r,g,b The font color
 	void loadFont(std::string name, std::string path, int r, int g, int b);
 
-	
+
+
 
 	//void TESTDRAWTEXT();
 
@@ -130,18 +138,23 @@ private:
 	
 	std::map<std::string, SDL_Texture*> m_preloaded_textures_collection;
 	
-	struct Element_Coordinates
+	struct Element_Info
 	{
-		int xpos;
-		int ypos;
-		int width;
-		int height;
-	}m_element_coordinates;
+		uint16_t xpos;
+		uint16_t ypos;
+		uint16_t width;
+		uint16_t height;
+		bool selectable;
+	}m_element_info;//Struct to save the element info temporary
 
-	std::map<std::string, Element_Coordinates> m_element_position_collection;//"Pre"store positions of elements that need to be changed. E.g. valve state texture
+	std::map<std::string, Element_Info> m_loaded_elements_info;//Map to save the element info while the programm is running. Get infos about a specific object by the name it is called in the .txt file
 
 	SDL_Surface* m_background_surface;
 	SDL_Texture* m_background_texture;
+
+	SDL_Surface* m_cursor_surface;
+	SDL_Surface* m_cursor_texture;
+
 	SDL_Color m_SDL_color_background;
 	SDL_Rect m_background_rect;
 	

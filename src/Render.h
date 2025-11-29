@@ -6,6 +6,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_rect.h>
 #include <SDL2/SDL_ttf.h>
+#include <SDL2/SDL_render.h>
 
 #include "Log.h"
 

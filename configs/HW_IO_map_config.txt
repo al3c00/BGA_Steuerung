@@ -1,0 +1,16 @@
+#Schieber_Schweineguelle_Offen
+{
+D_In_0
+}
+#Schieber_Schweineguelle_Zu
+{
+D_In_1
+}
+#Schieber_Rueckfuehrung_Offen
+{
+D_In_2
+}
+#Schieber_Rueckfuehrung_Zu
+{
+D_In_3
+}

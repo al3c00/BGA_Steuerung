@@ -3,7 +3,11 @@
 
 
 #include "Log.h"
-#include "Control_App.h"
+#include "Render.h"
+#include "defines.h"
+#include "GUI.h"
+#include "HW_Con.h"
+
 
 int main()
 {
@@ -44,13 +48,22 @@ int main()
 	
 	//Create GUI instance (main gui)
 	GUI system_diagram(&logger, &renderer);
+
+	//Create Hardware-handling class instance
+	HW_Con hw(&logger);
+	hw.loadDigitalInputAdresses("/configs/D_In_config.txt");
+	hw.loadAnalogInputAdresses("/configs/A_In_config.txt");
+	hw.loadDigitalOutputAdresses("/configs/D_Out_config.txt");
+	hw.loadIOMapConfig("/configs/HW_IO_map_config.txt");
 	
 
-	system_diagram.loadFont("ARIA_Black", "/fonts/arial.ttf", 0, 0, 0);
 	system_diagram.loadFont("ARIAL_Black", "/fonts/arial.ttf", 0, 0, 0);
 	system_diagram.loadTexture("Schema", "/resource/schema_bga_v3.png");
-	system_diagram.loadTexture("Arrow_Active", "/resource/circle_arrow.png");
-	system_diagram.loadTexture("Schieber_Geschlossen", "/resource/schieber_geschlossen_rechteck_rot.png");
+	system_diagram.loadTexture("Circular_Arrow", "/resource/circle_arrow.png");
+	system_diagram.loadTexture("HALT_Symbol", "/resource/halt_symbol.png");
+	system_diagram.loadTexture("Schieber_Geschlossen", "/resource/schieber_geschlossen.png");
+	system_diagram.loadTexture("Schieber_Offen", "/resource/schieber_offen.png");
+	system_diagram.loadTexture("Schieber_Unbekannt", "/resource/schieber_unbekannt.png");
 
 	system_diagram.loadXYWHPosition("/resource/drawable_objects_positions.txt");
 
@@ -73,7 +86,7 @@ int main()
 	//	draw things in backbuffer, from back to front
 	//	show things
 	//}
-	system_diagram.setBackGroundColor(175, 175, 175);
+	
 	int rotation = 0;
 	do
 	{
@@ -83,8 +96,13 @@ int main()
 		
 
 
+		hw.refreshDigitalInputStates();
+
+
+
 		if (total_time_last_frame.count() > 1000/target_fps)
 		{	
+			//Get system time
 			time = now;
 			current_time = std::chrono::system_clock::to_time_t(time);
 			str_current_time = std::ctime(&current_time);
@@ -94,14 +112,22 @@ int main()
 			renderer.clearRender();
 			//m_p_renderer->prepareRender();
 
-			//system_diagram.drawBackGroundColor();
+			system_diagram.drawBackGroundColor(225,225,225);
 			system_diagram.drawPreloadedTexture(0, 0, 800, 480, "Schema");
 
-			system_diagram.drawPreloadedTextureXYWH("Pumpe1_Aktiv", rotation, "Arrow_Active");
-			system_diagram.drawPreloadedTextureXYWH("Pumpe2_Aktiv", rotation, "Arrow_Active");
-			system_diagram.drawPreloadedTextureXYWH("Schieber_1_Status", 90, "Schieber_Geschlossen");
-			system_diagram.drawPreloadedTextureXYWH("Schieber_2_Status", 90, "Schieber_Geschlossen");
-			system_diagram.drawPreloadedTextureXYWH("Schieber_3_Status", "Schieber_Geschlossen");
+			//Draw a red rectangle behind the currently selected object
+			//system_diagram.drawCursor();
+
+			system_diagram.drawPreloadedTextureXYWH("Pumpe1_Aktiv", rotation, "Circular_Arrow");
+			system_diagram.drawPreloadedTextureXYWH("Pumpe2_Aktiv", rotation, "Circular_Arrow");
+			system_diagram.drawPreloadedTextureXYWH("Mischer_Schnecke_Aktiv", rotation, "HALT_Symbol");
+			system_diagram.drawPreloadedTextureXYWH("Schieber_Schweineguelle_Status", hw.getDoubleInputState("D_In0", "D_In1"));
+			system_diagram.drawPreloadedTextureXYWH("Schieber_Mischer_Status", 270, "Schieber_Geschlossen");
+			system_diagram.drawPreloadedTextureXYWH("Schieber_Probenahme_Status", "Schieber_Geschlossen");
+			system_diagram.drawPreloadedTextureXYWH("Schieber_GF_Status", "Schieber_Geschlossen");
+			system_diagram.drawPreloadedTextureXYWH("Schieber_GSD_Status", "Schieber_Geschlossen");
+			system_diagram.drawPreloadedTextureXYWH("Schieber_Fassbefuellung_Status", "Schieber_Geschlossen");
+			system_diagram.drawPreloadedTextureXYWH("Schieber_Rueckfuehrung_Status", "Schieber_Offen");
 		
 			//system_diagram.drawPreloadedTexture(80, 186, 15, 15, rotation, "Arrow_Active");
 			//system_diagram.drawText_l(50, 200, "Hello World", "ARIAL_Black");
@@ -111,7 +137,6 @@ int main()
 			system_diagram.drawText_l(7, 9, str_current_time, "ARIAL_Black");
 			system_diagram.drawText_l(231, 9, "FPS: " + std::to_string(target_fps), "ARIAL_Black");
 			system_diagram.drawText_r(473, 9, "Time(ms)/frame: " + std::to_string((int)total_time_last_frame.count()), "ARIAL_Black");
-
 
 
 			renderer.Show();

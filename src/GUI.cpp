@@ -27,31 +27,12 @@ GUI::GUI(Log* logger, Render* renderer)
 
 
 
-void GUI::setBackGroundColor(int r, int g, int b)
+
+
+void GUI::drawBackGroundColor(int r, int g, int b)
 {
-	/*Uint32 r_mask, g_mask, b_mask, a_mask;
-	r_mask = 0xFF000000;
-	g_mask = 0x00FF0000;
-	b_mask = 0x0000FF00;
-	a_mask = 0x000000FF;
-
-	m_background_surface = SDL_CreateRGBSurface(NULL, m_background_rect.w, m_background_rect.h, 32, r_mask, g_mask, b_mask, a_mask);
-	if (!m_background_surface)
-	{
-		m_p_logger->writeLog(LogLevel::ERROR, m_log_origin + " SDL_CREATE_BACKGROUND_SURFACE", SDL_GetError());
-	}
-	m_background_texture = SDL_CreateTextureFromSurface(m_p_render_instance->getRenderer(), m_background_surface);
-	if (!m_background_texture)
-	{
-		m_p_logger->writeLog(LogLevel::ERROR, m_log_origin + " SDL_CREATE_BACKGROUND_TEXTURE", SDL_GetError());
-	}*/
-
 	SDL_SetRenderDrawColor(m_p_render_instance->getRenderer(), r, g, b, SDL_ALPHA_OPAQUE);
 	SDL_RenderFillRect(m_p_render_instance->getRenderer(), &m_background_rect);
-}
-
-void GUI::drawBackGroundColor()
-{
 	SDL_RenderCopy(m_p_render_instance->getRenderer(), m_background_texture, NULL, &m_background_rect);
 }
 
@@ -64,6 +45,8 @@ void GUI::drawObject(int x_pos, int y_pos, int height, int width, int r, int g, 
 {
 
 }
+
+
 
 void GUI::drawPreloadedTexture(int x_pos, int y_pos, int height, int width, std::string name)
 {
@@ -94,14 +77,54 @@ void GUI::drawPreloadedTexture(int x_pos, int y_pos, int height, int width, int 
 void GUI::drawPreloadedTextureXYWH(std::string prepared_xy_name, std::string name)
 {
 	
-	drawPreloadedTexture(m_element_position_collection.at(prepared_xy_name).xpos, m_element_position_collection.at(prepared_xy_name).ypos, m_element_position_collection.at(prepared_xy_name).width,
-		m_element_position_collection.at(prepared_xy_name).height, name);
+	drawPreloadedTexture(m_loaded_elements_info.at(prepared_xy_name).xpos, m_loaded_elements_info.at(prepared_xy_name).ypos, m_loaded_elements_info.at(prepared_xy_name).width,
+		m_loaded_elements_info.at(prepared_xy_name).height, name);
 }
 
 void GUI::drawPreloadedTextureXYWH(std::string prepared_xy_name, int rotation, std::string name)
 {
-	drawPreloadedTexture(m_element_position_collection.at(prepared_xy_name).xpos, m_element_position_collection.at(prepared_xy_name).ypos, m_element_position_collection.at(prepared_xy_name).width,
-		m_element_position_collection.at(prepared_xy_name).height, rotation, name);
+	drawPreloadedTexture(m_loaded_elements_info.at(prepared_xy_name).xpos, m_loaded_elements_info.at(prepared_xy_name).ypos, m_loaded_elements_info.at(prepared_xy_name).width,
+		m_loaded_elements_info.at(prepared_xy_name).height, rotation, name);
+}
+
+void GUI::drawPreloadedTextureXYWH(std::string prepared_xy_name, int state)
+{
+	if (state == 0)
+	{
+		drawPreloadedTexture(m_loaded_elements_info.at(prepared_xy_name).xpos, m_loaded_elements_info.at(prepared_xy_name).ypos, m_loaded_elements_info.at(prepared_xy_name).width,
+			m_loaded_elements_info.at(prepared_xy_name).height, "Schieber_Geschlossen");
+	}
+	if (state == 1)
+	{
+		drawPreloadedTexture(m_loaded_elements_info.at(prepared_xy_name).xpos, m_loaded_elements_info.at(prepared_xy_name).ypos, m_loaded_elements_info.at(prepared_xy_name).width,
+			m_loaded_elements_info.at(prepared_xy_name).height, "Schieber_Offen");
+	}
+	if (state == 2)
+	{
+		drawPreloadedTexture(m_loaded_elements_info.at(prepared_xy_name).xpos, m_loaded_elements_info.at(prepared_xy_name).ypos, m_loaded_elements_info.at(prepared_xy_name).width,
+			m_loaded_elements_info.at(prepared_xy_name).height, "Schieber_Unbekannt");
+	}
+
+}
+
+void GUI::drawCursor()
+{
+	for (auto const& i : m_loaded_elements_info)
+	{
+		if (i.second.selectable == true)
+		{
+			SDL_Rect cursor_rect;
+			cursor_rect.x = i.second.xpos -1;
+			cursor_rect.y = i.second.ypos -1;
+			cursor_rect.w = i.second.width +2;
+			cursor_rect.h = i.second.height +2;
+
+			SDL_SetRenderDrawColor(m_p_render_instance->getRenderer(), 255, 0, 0, 255);
+			SDL_RenderFillRect(m_p_render_instance->getRenderer(), &cursor_rect);
+			SDL_RenderDrawRect(m_p_render_instance->getRenderer(),&cursor_rect);
+
+		}
+	}
 }
 
 
@@ -211,12 +234,12 @@ void GUI::drawText_r(int x_pos, int y_pos, int numbers, std::string font)
 
 void GUI::prepareXYWHPosition(int xpos, int ypos, int width, int height, std::string name)
 {
-	m_element_coordinates.xpos = xpos;
-	m_element_coordinates.ypos = ypos;
-	m_element_coordinates.width = width;
-	m_element_coordinates.height = height;
+	m_element_info.xpos = xpos;
+	m_element_info.ypos = ypos;
+	m_element_info.width = width;
+	m_element_info.height = height;
 
-	m_element_position_collection.insert({ name, m_element_coordinates});
+	m_loaded_elements_info.insert({ name, m_element_info});
 }
 
 void GUI::loadXYWHPosition(std::string path)
@@ -225,7 +248,7 @@ void GUI::loadXYWHPosition(std::string path)
 	std::string single_character;
 	std::string object_name;
 
-	enum struct VARIANTS{XPOS = 0, YPOS = 1, WDATA = 2, HDATA = 3} variants;
+	enum struct VARIANTS{XPOS = 0, YPOS = 1, WDATA = 2, HDATA = 3, SELECTABLE = 4} variants;
 
 	std::ifstream object_position_file(m_getProjectDirPath() + path);
 	object_position_file.seekg(0, object_position_file.end);
@@ -250,7 +273,7 @@ void GUI::loadXYWHPosition(std::string path)
 			temp.append(single_character);
 		}
 
-		//Check if a variant code word had been read (xpos,ypos,wdata,hdata). If yes clear string and prepare to read and store actual data in struct
+		//Check if a variant code word had been read (xpos,ypos,wdata,hdata,sel). If yes clear string and prepare to read and store actual data in struct
 		{
 			if (temp == "xpos")
 			{
@@ -272,6 +295,11 @@ void GUI::loadXYWHPosition(std::string path)
 				variants = VARIANTS::HDATA;
 				temp.clear();
 			}
+			else if (temp == "sel")
+			{
+				variants = VARIANTS::SELECTABLE;
+				temp.clear();
+			}
 		}
 
 		if (single_character == "{")
@@ -285,33 +313,33 @@ void GUI::loadXYWHPosition(std::string path)
 			{
 			case VARIANTS::XPOS:
 			{
-				m_element_coordinates.xpos = std::stoi(temp);
+				m_element_info.xpos = std::stoi(temp);
 				temp.clear();
 			}break;
 			case VARIANTS::YPOS:
 			{
-				m_element_coordinates.ypos = std::stoi(temp);
+				m_element_info.ypos = std::stoi(temp);
 				temp.clear();
 			}break;
 			case VARIANTS::WDATA:
 			{
-				m_element_coordinates.width = std::stoi(temp);
+				m_element_info.width = std::stoi(temp);
 				temp.clear();
 			}break;
-			case VARIANTS::HDATA: //Will not be used. No comma follows the hdata. Struct member will be filled when "}" is read
+			case VARIANTS::HDATA: 
 			{
-				m_element_coordinates.height = std::stoi(temp);
+				m_element_info.height = std::stoi(temp);
 				temp.clear();
 			}break;
 			default:
 				break;
 			}
 		}
-		if (single_character == "}")
+		if (single_character == "}")//The last number doesn't have a comma following, so it has to be read when the bracelet is found
 		{
-			m_element_coordinates.height = std::stoi(temp);
+			m_element_info.selectable = std::stoi(temp);
 			temp.clear();
-			m_element_position_collection.insert({ object_name, m_element_coordinates });
+			m_loaded_elements_info.insert({ object_name, m_element_info });
 		}
 		
 
