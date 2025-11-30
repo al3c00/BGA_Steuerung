@@ -307,6 +307,35 @@ void HW_Con::loadIOMapConfig(std::string path)
 	}
 }
 
+void HW_Con::initialisePCBRelayState()
+{
+	//Put together a 8-Bit message with all the ports (including the changed one) to send to the two D_Out addresses
+
+	uint8_t msg_0_7 = 0;
+	uint8_t msg_8_15 = 0;
+
+	msg_0_7 = ((m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_0").is_active) << 7 |
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_1").is_active << 6) |
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_2").is_active << 5) |
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_3").is_active << 4) |
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_4").is_active << 3) |
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_5").is_active << 2) |
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_6").is_active << 1) |
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_7").is_active));
+
+	msg_8_15 = ((m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_8").is_active) << 7 |
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_9").is_active << 6) |
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_10").is_active << 5) |
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_11").is_active << 4) |
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_12").is_active << 3) |
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_13").is_active << 2) |
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_14").is_active << 1) |
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_15").is_active));
+
+	wiringPiI2CWrite(m_PCF_IO_35, msg_0_7);
+	wiringPiI2CWrite(m_PCF_IO_36, msg_8_15);
+}
+
 bool HW_Con::getDigitalInputState(std::string name)
 {
 	for (auto const& i : m_PCF8574_DigitalIn_Adresse_collection)
@@ -339,9 +368,53 @@ int HW_Con::getDoubleInputState(std::string name1, std::string name2)
 	
 }
 
+void HW_Con::switchDigitalOutputState(std::string name)
+{
+	//Get all the states as they are currently in the pcf8574
+	//refreshDigitalOutputStates();
+
+	//Switch the value, that we want to change
+	m_PCF8574_DigitalOut_Adresse_collection.at(name).is_active = !m_PCF8574_DigitalOut_Adresse_collection.at(name).is_active;
+
+	//Put together a 8-Bit message with all the ports (including the changed one) to send to the two D_Out addresses
+
+	uint8_t msg_0_7 = 0;
+	uint8_t msg_8_15 = 0;
+
+	msg_0_7 = ((m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_0").is_active) << 7 |
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_1").is_active << 6) |
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_2").is_active << 5) |
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_3").is_active << 4) |
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_4").is_active << 3) |
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_5").is_active << 2) |
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_6").is_active << 1) |
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_7").is_active));
+		
+	msg_8_15 = ((m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_8").is_active) << 7 |
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_9").is_active << 6) |
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_10").is_active << 5) |
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_11").is_active << 4) |
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_12").is_active << 3) |
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_13").is_active << 2) |
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_14").is_active << 1) |
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_15").is_active));
+
+	wiringPiI2CWrite(m_PCF_IO_35, msg_0_7);
+	wiringPiI2CWrite(m_PCF_IO_36, msg_8_15);
+
+
+}
+
+bool HW_Con::getDigitalOutputState(std::string name)
+{
+	return false;
+}
+
+
+
 void HW_Con::refreshDigitalInputStates()
 {
-	uint8_t Input = wiringPiI2CRead(m_PCF_IO_32);
+	uint8_t Input = wiringPiI2CRead(m_PCF_IO_32);//Get D_In 0-7
 
 	bool ports[8];
 
@@ -358,7 +431,7 @@ void HW_Con::refreshDigitalInputStates()
 	m_PCF8574_DigitalIn_Adresse_collection.at("D_In_6").is_active = ports[6];
 	m_PCF8574_DigitalIn_Adresse_collection.at("D_In_7").is_active = ports[7];
 
-	Input = wiringPiI2CRead(m_PCF_IO_33);
+	Input = wiringPiI2CRead(m_PCF_IO_33);//Get D_In 8-15
 
 	for (int i = 0; i < 8; i++)
 	{
@@ -373,7 +446,7 @@ void HW_Con::refreshDigitalInputStates()
 	m_PCF8574_DigitalIn_Adresse_collection.at("D_In_14").is_active = ports[6];
 	m_PCF8574_DigitalIn_Adresse_collection.at("D_In_15").is_active = ports[7];
 
-	Input = wiringPiI2CRead(m_PCF_IO_34);
+	Input = wiringPiI2CRead(m_PCF_IO_34);//Get D_In 16-23
 
 	for (int i = 0; i < 8; i++)
 	{

@@ -8,7 +8,7 @@
 #include "wiringPiI2C.h"
 #include "Log.h"
 
-
+//Relays use pull-up resistors-->When the PCF port opens to gnd, the relay is not active 
 class HW_Con
 {
 public:
@@ -20,16 +20,35 @@ public:
 	void loadDigitalOutputAdresses(std::string path);
 	void loadIOMapConfig(std::string path);
 
+
+	//@brief Set all relays outputs to inactive
+	//@brief When the PCF8574 start up, the ports are closed to GND. The pull-up resistors activate the relays
+	//@brief Call this function right after initialising the class instance to deactivate the relays
+	//@brief The correct states are already set when loading in the config
+	void initialisePCBRelayState();
+
 	bool getDigitalInputState(std::string name);
 
 	//@brief Use this function to get a simplified Input state of two seperate digital inputs, that check the same thing. E.g. a valve has a sensor D_In_0 for OPEN and a sensor D_In_1 for CLOSED
-	//@param name1 Name "D_InX" of the first digitalInput on the PCB
-	//@param name2 Name "D_InX" of the second digitalInput on the PCB
+	//@param name1 Name "D_In_X" of the first digitalInput on the PCB
+	//@param name2 Name "D_In_X" of the second digitalInput on the PCB
 	//@return Returns 0 if the valve is closed (x active, x+1 inactive, 1 if the valve is open (x inactive, x+1 active), 2 if undefined (both the same state)
 	int getDoubleInputState(std::string name1, std::string name2);
 
-	void refreshDigitalInputStates();
+	//@brief Switch the output state of one Ports ("D_Out_X")
+	//@param name Name of the port according to the PCB-Design
+	void switchDigitalOutputState(std::string name);
+	
+	
 
+	//@brief Gets the state of the port from the PCF8574
+	//@param name Name "D_Out_X"
+	//@return Returns true if the port is closed (Relay is active), false if the port is open to GND (Relay is not active)
+	bool getDigitalOutputState(std::string name);
+
+
+	void refreshDigitalInputStates();
+	
 
 private:
 
@@ -38,11 +57,11 @@ private:
 
 
 	//wiringPi I2C adresses
-	uint16_t m_PCF_IO_32;
-	uint16_t m_PCF_IO_33;
-	uint16_t m_PCF_IO_34;
-	uint16_t m_PCF_IO_35;
-	uint16_t m_PCF_IO_36;
+	uint16_t m_PCF_IO_32;//Digital_Input 0-7
+	uint16_t m_PCF_IO_33;//Digital_Input 8-15
+	uint16_t m_PCF_IO_34;//Digital_Input 16-23
+	uint16_t m_PCF_IO_35;//Digital_Output 0-7
+	uint16_t m_PCF_IO_36;//Digital_Output 8-15
 
 	struct IO_Object
 	{

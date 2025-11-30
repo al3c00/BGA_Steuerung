@@ -55,6 +55,8 @@ int main()
 	hw.loadAnalogInputAdresses("/configs/A_In_config.txt");
 	hw.loadDigitalOutputAdresses("/configs/D_Out_config.txt");
 	hw.loadIOMapConfig("/configs/HW_IO_map_config.txt");
+
+	hw.initialisePCBRelayState();
 	
 
 	system_diagram.loadFont("ARIAL_Black", "/fonts/arial.ttf", 0, 0, 0);
@@ -98,7 +100,7 @@ int main()
 
 		hw.refreshDigitalInputStates();
 
-
+		hw.switchDigitalOutputState("D_Out_0");
 
 		if (total_time_last_frame.count() > 1000/target_fps)
 		{	
@@ -121,7 +123,7 @@ int main()
 			system_diagram.drawPreloadedTextureXYWH("Pumpe1_Aktiv", rotation, "Circular_Arrow");
 			system_diagram.drawPreloadedTextureXYWH("Pumpe2_Aktiv", rotation, "Circular_Arrow");
 			system_diagram.drawPreloadedTextureXYWH("Mischer_Schnecke_Aktiv", rotation, "HALT_Symbol");
-			system_diagram.drawPreloadedTextureXYWH("Schieber_Schweineguelle_Status", hw.getDoubleInputState("D_In0", "D_In1"));
+			system_diagram.drawPreloadedTextureXYWH("Schieber_Schweineguelle_Status", hw.getDoubleInputState("D_In_0", "D_In_1"));
 			system_diagram.drawPreloadedTextureXYWH("Schieber_Mischer_Status", 270, "Schieber_Geschlossen");
 			system_diagram.drawPreloadedTextureXYWH("Schieber_Probenahme_Status", "Schieber_Geschlossen");
 			system_diagram.drawPreloadedTextureXYWH("Schieber_GF_Status", "Schieber_Geschlossen");
