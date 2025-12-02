@@ -100,7 +100,17 @@ int main()
 
 		hw.refreshDigitalInputStates();
 
-		hw.switchDigitalOutputState("D_Out_0");
+
+		if(!hw.getDigitalInputState("D_In_1"))
+		{ 
+			hw.setDigitalOutputState(true,"D_Out_0");
+		}
+		else if (hw.getDigitalInputState("D_In_1"))
+		{
+			hw.setDigitalOutputState(false, "D_Out_0");
+		}
+
+		
 
 		if (total_time_last_frame.count() > 1000/target_fps)
 		{	
@@ -158,7 +168,6 @@ int main()
 
 	} while (true);
 
-	std::cout << "Hello" << std::endl;
 
 
 	logger.writeLog(LogLevel::INFO, log_origin, "SUCCESSFUL");

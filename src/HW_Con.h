@@ -27,6 +27,10 @@ public:
 	//@brief The correct states are already set when loading in the config
 	void initialisePCBRelayState();
 
+
+	//@brief Gets the state of a digital input
+	//@param name Name of the input pin ("D_in_X")
+	//@return Returns true if the input is active (Signal line is tied to GND)
 	bool getDigitalInputState(std::string name);
 
 	//@brief Use this function to get a simplified Input state of two seperate digital inputs, that check the same thing. E.g. a valve has a sensor D_In_0 for OPEN and a sensor D_In_1 for CLOSED
@@ -35,13 +39,18 @@ public:
 	//@return Returns 0 if the valve is closed (x active, x+1 inactive, 1 if the valve is open (x inactive, x+1 active), 2 if undefined (both the same state)
 	int getDoubleInputState(std::string name1, std::string name2);
 
-	//@brief Switch the output state of one Ports ("D_Out_X")
-	//@param name Name of the port according to the PCB-Design
+	//@brief Switch the output state of one Ports 
+	//@param name Name of the port according to the PCB-Design ("D_Out_X")
 	void switchDigitalOutputState(std::string name);
+
+	//@brief Sets the state and does't care if its already like that
+	//@param state True --> Output active, False --> Outpute not active
+	//@param name Name of the port according to the PCB-Design ("D_Out_X")
+	void setDigitalOutputState(bool state, std::string name);
 	
 	
 
-	//@brief Gets the state of the port from the PCF8574
+	//@brief Gets the SHOULD BE state according to the struct IO_Object, collected in the map xxx_DigitalOut_xxx_collection
 	//@param name Name "D_Out_X"
 	//@return Returns true if the port is closed (Relay is active), false if the port is open to GND (Relay is not active)
 	bool getDigitalOutputState(std::string name);
