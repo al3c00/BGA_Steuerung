@@ -11,8 +11,8 @@ Die Anlage besteht aus einer Vorgrube (Mischen der Substrate), einem Fermenter (
 Im nachfolgenden Diagramm wird die Funktionsweise der Anlage schematisch dargestellt:
 ```mermaid
 graph TD;
-  Güllegrube Schweine-->Vorgrube;
-  Güllegrube Rinder-->Vorgrube;
+  Güllegrube_Schweine-->Vorgrube;
+  Güllegrube_Rinder-->Vorgrube;
   Feststoffmischer-->Vorgrube;
   Vorgrube-->Fermenter;
   Fermenter-->Endlager;
