@@ -74,42 +74,42 @@ void GUI::drawPreloadedTexture(int x_pos, int y_pos, int height, int width, int 
 	}
 }
 
-void GUI::drawPreloadedTextureXYWH(std::string prepared_xy_name, std::string name)
+void GUI::drawPreloadedTextureXYWH(std::string object_name, std::string texture_name)
 {
 	
-	drawPreloadedTexture(m_loaded_elements_info.at(prepared_xy_name).xpos, m_loaded_elements_info.at(prepared_xy_name).ypos, m_loaded_elements_info.at(prepared_xy_name).width,
-		m_loaded_elements_info.at(prepared_xy_name).height, name);
+	drawPreloadedTexture(m_loaded_elements_pos.at(object_name).xpos, m_loaded_elements_pos.at(object_name).ypos, m_loaded_elements_pos.at(object_name).width,
+		m_loaded_elements_pos.at(object_name).height, texture_name);
 }
 
-void GUI::drawPreloadedTextureXYWH(std::string prepared_xy_name, int rotation, std::string name)
+void GUI::drawPreloadedTextureXYWH(std::string object_name, int rotation, std::string texture_name)
 {
-	drawPreloadedTexture(m_loaded_elements_info.at(prepared_xy_name).xpos, m_loaded_elements_info.at(prepared_xy_name).ypos, m_loaded_elements_info.at(prepared_xy_name).width,
-		m_loaded_elements_info.at(prepared_xy_name).height, rotation, name);
+	drawPreloadedTexture(m_loaded_elements_pos.at(object_name).xpos, m_loaded_elements_pos.at(object_name).ypos, m_loaded_elements_pos.at(object_name).width,
+		m_loaded_elements_pos.at(object_name).height, rotation, texture_name);
 }
 
-void GUI::drawPreloadedTextureXYWH(std::string prepared_xy_name, int state)
+void GUI::drawPreloadedTextureXYWH(std::string object_name, int state)
 {
 	if (state == 0)
 	{
-		drawPreloadedTexture(m_loaded_elements_info.at(prepared_xy_name).xpos, m_loaded_elements_info.at(prepared_xy_name).ypos, m_loaded_elements_info.at(prepared_xy_name).width,
-			m_loaded_elements_info.at(prepared_xy_name).height, "Schieber_Geschlossen");
+		drawPreloadedTexture(m_loaded_elements_pos.at(object_name).xpos, m_loaded_elements_pos.at(object_name).ypos, m_loaded_elements_pos.at(object_name).width,
+			m_loaded_elements_pos.at(object_name).height, "Schieber_Geschlossen");
 	}
 	if (state == 1)
 	{
-		drawPreloadedTexture(m_loaded_elements_info.at(prepared_xy_name).xpos, m_loaded_elements_info.at(prepared_xy_name).ypos, m_loaded_elements_info.at(prepared_xy_name).width,
-			m_loaded_elements_info.at(prepared_xy_name).height, "Schieber_Offen");
+		drawPreloadedTexture(m_loaded_elements_pos.at(object_name).xpos, m_loaded_elements_pos.at(object_name).ypos, m_loaded_elements_pos.at(object_name).width,
+			m_loaded_elements_pos.at(object_name).height, "Schieber_Offen");
 	}
 	if (state == 2)
 	{
-		drawPreloadedTexture(m_loaded_elements_info.at(prepared_xy_name).xpos, m_loaded_elements_info.at(prepared_xy_name).ypos, m_loaded_elements_info.at(prepared_xy_name).width,
-			m_loaded_elements_info.at(prepared_xy_name).height, "Schieber_Unbekannt");
+		drawPreloadedTexture(m_loaded_elements_pos.at(object_name).xpos, m_loaded_elements_pos.at(object_name).ypos, m_loaded_elements_pos.at(object_name).width,
+			m_loaded_elements_pos.at(object_name).height, "Schieber_Unbekannt");
 	}
 
 }
 
 void GUI::drawCursor()
 {
-	for (auto const& i : m_loaded_elements_info)
+	for (auto const& i : m_loaded_elements_pos)
 	{
 		if (i.second.selectable == true)
 		{
@@ -234,12 +234,12 @@ void GUI::drawText_r(int x_pos, int y_pos, int numbers, std::string font)
 
 void GUI::prepareXYWHPosition(int xpos, int ypos, int width, int height, std::string name)
 {
-	m_element_info.xpos = xpos;
-	m_element_info.ypos = ypos;
-	m_element_info.width = width;
-	m_element_info.height = height;
+	m_element_pos.xpos = xpos;
+	m_element_pos.ypos = ypos;
+	m_element_pos.width = width;
+	m_element_pos.height = height;
 
-	m_loaded_elements_info.insert({ name, m_element_info});
+	m_loaded_elements_pos.insert({ name, m_element_pos});
 }
 
 void GUI::loadXYWHPosition(std::string path)
@@ -313,22 +313,22 @@ void GUI::loadXYWHPosition(std::string path)
 			{
 			case VARIANTS::XPOS:
 			{
-				m_element_info.xpos = std::stoi(temp);
+				m_element_pos.xpos = std::stoi(temp);
 				temp.clear();
 			}break;
 			case VARIANTS::YPOS:
 			{
-				m_element_info.ypos = std::stoi(temp);
+				m_element_pos.ypos = std::stoi(temp);
 				temp.clear();
 			}break;
 			case VARIANTS::WDATA:
 			{
-				m_element_info.width = std::stoi(temp);
+				m_element_pos.width = std::stoi(temp);
 				temp.clear();
 			}break;
 			case VARIANTS::HDATA: 
 			{
-				m_element_info.height = std::stoi(temp);
+				m_element_pos.height = std::stoi(temp);
 				temp.clear();
 			}break;
 			default:
@@ -337,9 +337,9 @@ void GUI::loadXYWHPosition(std::string path)
 		}
 		if (single_character == "}")//The last number doesn't have a comma following, so it has to be read when the bracelet is found
 		{
-			m_element_info.selectable = std::stoi(temp);
+			m_element_pos.selectable = std::stoi(temp);
 			temp.clear();
-			m_loaded_elements_info.insert({ object_name, m_element_info });
+			m_loaded_elements_pos.insert({ object_name, m_element_pos });
 		}
 		
 

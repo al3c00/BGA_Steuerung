@@ -32,9 +32,15 @@ public:
 	void drawPreloadedTexture(int x_pos, int y_pos, int height, int width, std::string name);
 	void drawPreloadedTexture(int x_pos, int y_pos, int height, int width, int rotation, std::string name);
 
-	void drawPreloadedTextureXYWH(std::string prepared_xy_name,  std::string name);
-	void drawPreloadedTextureXYWH(std::string prepared_xy_name, int rotation, std::string name);
-	void drawPreloadedTextureXYWH(std::string prepared_xy_name, int state);
+
+	//@brief Function to draw Textures, with the position set in the file: "drawable_objects_positions.txt"
+	//@param object_name Name as the position data is called in the file
+	//@param texture_name Name of the texture to draw
+	//@param rotation Rotation value of the texture in degrees
+	//@param state Use this function together with HW_CON::getDoubleInputState(), mainly for valves, that have to position sensors (one active when open, one active when closed)
+	void drawPreloadedTextureXYWH(std::string object_name,  std::string texture_name);
+	void drawPreloadedTextureXYWH(std::string object_name, int rotation, std::string texture_name);
+	void drawPreloadedTextureXYWH(std::string object_name, int state);
 
 
 	//@brief Function to draw a rectangle arround the currently selected object
@@ -138,16 +144,16 @@ private:
 	
 	std::map<std::string, SDL_Texture*> m_preloaded_textures_collection;
 	
-	struct Element_Info
+	struct Element_Pos
 	{
 		uint16_t xpos;
 		uint16_t ypos;
 		uint16_t width;
 		uint16_t height;
 		bool selectable;
-	}m_element_info;//Struct to save the element info temporary
+	}m_element_pos;//Struct to save the element info temporary
 
-	std::map<std::string, Element_Info> m_loaded_elements_info;//Map to save the element info while the programm is running. Get infos about a specific object by the name it is called in the .txt file
+	std::map<std::string, Element_Pos> m_loaded_elements_pos;//Map to save the element info while the programm is running. Get infos about a specific object by the name it is called in the .txt file
 
 	SDL_Surface* m_background_surface;
 	SDL_Texture* m_background_texture;
