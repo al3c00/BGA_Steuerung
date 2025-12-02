@@ -21,3 +21,6 @@ graph TD;
   Endlager-->Nachbarbetrieb;
   Endlager-->Fassbefüllung;
 ```
+Gasführende Anlagenteile werden durch diese Steuerung nicht beeinflusst. 
+Für den Betrieb der gesamten Anlage sind mehrere Pumpen und Schieber sowie ein Motor für den Betrieb des Festsoffmischers nötig. Die meisten werden neu installiert und werden mit einer Schützsteuerung bedient. Für die bereits bestehende Pumpe, welche mit Funk bedient wird, wird ein stationäres Ergänzungsfunksendemodul installiert. Die Schieber werden pneumatisch gesteuert. Der Luftfluss wird mit 12v 5/2 Pneumatikventilen geregelt.
+### Steuerung der Anlage
