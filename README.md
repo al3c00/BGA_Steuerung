@@ -33,7 +33,7 @@ Für den Betrieb der gesamten Anlage sind mehrere Pumpen und Schieber sowie ein 
 + 2 Analoge Inputs (0-5v)
 + 16 Digitale Outputs
 + UART, SPI, I2C, drahtlose Kommunikationsmöglichkeiten des Raspberry Pi 4
-+ 
+  
 ### Steuerung der Anlage: _Sequenzenhandling noch nicht programmiert!_
 
 Das Programm lädt Sequenzen, die zu einem bestimmten Zeitpunkt abgespielt werden sollen. Der Benutzer ist frei in der Programmierung der Sequenzen. Diese werden in einer .txt-Datei gespeichert und bei allfälligem Neustart des Programms wieder aufgerufen. Für das Fortschreiten in der Sequenz können Wartezeiten, Messmengen aber auch Bedingungen wie Schieberstellungen (geprüft mit digitalen Inputs) dienen.
