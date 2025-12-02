@@ -19,7 +19,9 @@
     <ClCompile Include="src\HW_Con.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="Sequence_Handler.cpp" />
+    <ClCompile Include="src\Sequence_Handler.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header">
@@ -48,6 +50,8 @@
     <ClInclude Include="src\HW_Con.h">
       <Filter>Header</Filter>
     </ClInclude>
-    <ClInclude Include="src\Sequence_Handler.h" />
+    <ClInclude Include="src\Sequence_Handler.h">
+      <Filter>Header</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

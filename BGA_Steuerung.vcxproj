@@ -109,7 +109,6 @@
     <AdditionalSourcesToCopyMapping>/resource;$(AdditionalSourcesToCopyMapping)</AdditionalSourcesToCopyMapping>
   </PropertyGroup>
   <ItemGroup>
-    <ClCompile Include="Sequence_Handler.cpp" />
     <ClCompile Include="src\Control_App.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">true</ExcludedFromBuild>
@@ -119,6 +118,7 @@
     <ClCompile Include="src\Log.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Render.cpp" />
+    <ClCompile Include="src\Sequence_Handler.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Control_App.h">
