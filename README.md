@@ -49,4 +49,4 @@ Verbesserungspotenzial:
 + Schöneres Layout der Platine
 + Aufbauposition des Raspberry optimieren
 + Pin Header besser zu Montageposition des RPI anpassen
-+ weiteres...
++ Diverses mehr
