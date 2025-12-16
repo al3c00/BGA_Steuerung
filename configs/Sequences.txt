@@ -1,0 +1,8 @@
+#Sequence1
+{
+WAIT,500-
+SWITCH_DO,D_Out_1-
+WAIT,500-
+SWITCH_DO,D_Out_1-
+WAIT,500-
+}

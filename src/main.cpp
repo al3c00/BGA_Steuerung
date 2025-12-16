@@ -62,11 +62,15 @@ int main()
 
 	Sequence_Handler sqh(&logger, hw);
 	sqh.playSequence();
+
+
+	sqh.loadStoredSequences("/configs/Sequences.txt");
+	
 	
 
 	system_diagram.loadFont("ARIAL_Black", "/fonts/arial.ttf", 0, 0, 0);
-	system_diagram.loadTexture("Schema", "/resource/schema_bga_v3.png");
 	system_diagram.loadTexture("Circular_Arrow", "/resource/circle_arrow.png");
+	system_diagram.loadTexture("Schema", "/resource/schema_bga_v3.png");
 	system_diagram.loadTexture("HALT_Symbol", "/resource/halt_symbol.png");
 	system_diagram.loadTexture("Schieber_Geschlossen", "/resource/schieber_geschlossen.png");
 	system_diagram.loadTexture("Schieber_Offen", "/resource/schieber_offen.png");
@@ -74,6 +78,7 @@ int main()
 
 	system_diagram.loadXYWHPosition("/resource/drawable_objects_positions.txt");
 
+	
 
 	std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
 	std::chrono::system_clock::time_point last_frame = std::chrono::system_clock::now();
@@ -138,7 +143,7 @@ int main()
 			system_diagram.drawPreloadedTextureXYWH("Pumpe1_Aktiv", rotation, "Circular_Arrow");
 			system_diagram.drawPreloadedTextureXYWH("Pumpe2_Aktiv", rotation, "Circular_Arrow");
 			system_diagram.drawPreloadedTextureXYWH("Mischer_Schnecke_Aktiv", rotation, "HALT_Symbol");
-			system_diagram.drawPreloadedTextureXYWH("Schieber_Schweineguelle_Status", hw.getDoubleInputState("D_In_0", "D_In_1"));
+			system_diagram.drawPreloadedTextureXYWH("Schieber_Schweineguelle_Status", hw->getDoubleInputState("D_In_0", "D_In_1"));
 			system_diagram.drawPreloadedTextureXYWH("Schieber_Mischer_Status", 270, "Schieber_Geschlossen");
 			system_diagram.drawPreloadedTextureXYWH("Schieber_Probenahme_Status", "Schieber_Geschlossen");
 			system_diagram.drawPreloadedTextureXYWH("Schieber_GF_Status", "Schieber_Geschlossen");

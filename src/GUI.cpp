@@ -33,7 +33,6 @@ void GUI::drawBackGroundColor(int r, int g, int b)
 {
 	SDL_SetRenderDrawColor(m_p_render_instance->getRenderer(), r, g, b, SDL_ALPHA_OPAQUE);
 	SDL_RenderFillRect(m_p_render_instance->getRenderer(), &m_background_rect);
-	SDL_RenderCopy(m_p_render_instance->getRenderer(), m_background_texture, NULL, &m_background_rect);
 }
 
 void GUI::drawObject( int x_pos, int y_pos, int height, int width, std::string path)
@@ -349,7 +348,14 @@ void GUI::loadXYWHPosition(std::string path)
 void GUI::loadTexture(std::string name, std::string path)
 {
 	std::string temp_path = m_getProjectDirPath() + path;
-	m_preloaded_textures_collection.insert({ name, IMG_LoadTexture(m_p_render_instance->getRenderer(), temp_path.c_str()) });
+
+	SDL_Texture* temp = IMG_LoadTexture(m_p_render_instance->getRenderer(), temp_path.c_str());
+	if (!temp)
+	{
+		m_p_logger->writeLog(LogLevel::ERROR, m_log_origin + " IMG_LoadTexture", SDL_GetError());
+	}
+
+	m_preloaded_textures_collection.insert({ name, temp});
 }
 
 void GUI::loadFont(std::string name, std::string path, int r, int g, int b)

@@ -25,12 +25,10 @@ public:
 
 	void saveSequence();
 
-	void loadStoredSequences();
+	void loadStoredSequences(std::string path);
 
 	void playSequence();
 
-
-	~Sequence_Handler();
 
 
 private:
@@ -40,9 +38,7 @@ private:
 
 	std::mutex m_HW_Con_mutex;
 
-
 	void m_sequence_wait(int wait_seconds);
-
 	bool m_getDigitalInputState(std::string name);
 	int m_getDoubleInputState(std::string name1, std::string name2);
 	void m_switchDigitalOutputState(std::string name);
@@ -50,6 +46,7 @@ private:
 
 	std::unordered_map<std::string, std::function<void(const std::vector<std::string>&)>>m_functions;
 
+	std::vector<std::unordered_map<std::string, std::function<void(const std::vector<std::string>&)>>>m_complete_sequences;
 
 	void test();
 	//Map with function pointers. The functions are class methods from HW_Con. With the mapping to a string name, they are easier to connect with the function names in the .txt-file
@@ -60,6 +57,9 @@ private:
 
 
 	std::vector<void(*)>functions;
+
+	std::string m_log_origin;
+	std::string m_getProjectDirPath();
 
 };
 
