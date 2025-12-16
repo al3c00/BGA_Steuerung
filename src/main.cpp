@@ -64,7 +64,7 @@ int main()
 	sqh.playSequence();
 
 
-	sqh.loadStoredSequences("/configs/Sequences.txt");
+	sqh.loadSeq2("/configs/Sequences.txt");
 	
 	
 

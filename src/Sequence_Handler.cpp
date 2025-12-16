@@ -38,100 +38,173 @@ Sequence_Handler::Sequence_Handler(Log* logger, std::shared_ptr<HW_Con> hw_con)
 	};
 }
 
-void Sequence_Handler::loadStoredSequences(std::string path)
+//void Sequence_Handler::loadStoredSequences(std::string path)
+//{
+//		std::string temp;
+//		std::string single_character;
+//		std::string sequence_name;
+//		std::vector<std::string>function_arguments;
+//		std::vector<std::string>function_list;
+//
+//		
+//
+//		function_list.reserve(10);
+//
+//		
+//
+//		std::ifstream file(m_getProjectDirPath() + path);
+//		file.seekg(0, file.end);
+//		int length = file.tellg();
+//		file.seekg(0, file.beg);
+//
+//		char* buffer = new char[length];
+//
+//		m_p_logger->writeLog(LogLevel::INFO, m_log_origin + " LOAD_STORED_SEQUENCES", "Reading: " + std::to_string(length) + " characters");
+//
+//		file.read(buffer, length);
+//
+//		file.close();
+//
+//		//Unsafe, file could be corrupted!!
+//		for (int i = 0; i < length; i++)
+//		{
+//			single_character = buffer[i];
+//
+//			//Check if a function name has been read. If yes clear string and prepare to read and store function arguments
+//
+//			if (temp == "WAIT")
+//			{
+//				
+//				function_list.push_back("WAIT");
+//				temp.clear();
+//			}
+//
+//			if (temp == "GET_DI")
+//			{
+//				
+//				function_list.push_back("GET_DI");
+//				temp.clear();
+//			}
+//
+//			if (temp == "GET_DOUBLE_DI")
+//			{
+//				
+//				function_list.push_back("GET_DOUBLE_DI");
+//				temp.clear();
+//			}
+//
+//			if (temp == "SWITCH_DO")
+//			{
+//				
+//				function_list.push_back("SWITCH_DO");
+//				temp.clear();
+//			}
+//
+//			if (temp == "SET_DO")
+//			{
+//				
+//				function_list.push_back("SET_DO");
+//				temp.clear();
+//			}
+//
+//
+//			if (single_character != "#" && single_character != "{" && single_character != "}" && single_character != "," && single_character != "-" && single_character != "\n" && single_character != "\r")
+//			{
+//				temp.append(single_character);
+//			}
+//
+//			//The line from one function ends with "-", if there are two arguments for one functions, they are seperated with ","
+//			if (single_character == "," || single_character == "-")
+//			{
+//				function_arguments.push_back(temp);
+//				temp.clear();
+//			}
+//
+//			if (single_character == "}")//The last number doesn't have a comma following, so it has to be read when the bracelet is found
+//			{
+//				for (int i = 0; i < function_list.size(); i++)
+//				{
+//					m_complete_sequences.push_back({function_list.at(i),function_arguments.at(i) });
+//				}
+//				temp.clear();
+//			}
+//		}
+//
+//
+//
+//}
+
+void Sequence_Handler::loadSeq2(std::string path)
 {
-		std::string temp;
-		std::string single_character;
-		std::string sequence_name;
-		std::vector<std::string>function_arguments;
-		std::vector<std::string>function_list;
+	std::string temp;
+	std::string single_character;
+	std::vector<std::string> function_list;
+	std::vector<std::string> function_arguments;
 
-		
+	std::ifstream file(m_getProjectDirPath() + path, std::ios::binary | std::ios::ate);
+	if (!file)
+		return;
 
-		function_list.reserve(10);
+	std::streamsize length = file.tellg();
+	file.seekg(0, std::ios::beg);
 
-		enum struct FUNCTION_TYPES { GET_DIGITAL_INPUT = 0, GET_DOUBLE_DIGITAL_INPUT = 1, SET_DIGITAL_OUTPUT = 2, SWITCH_DIGITAL_OUTPUT = 3, WAIT = 4 } function_types;
+	std::vector<char> buffer(length);
+	file.read(buffer.data(), length);
+	file.close();
 
-		std::ifstream file(m_getProjectDirPath() + path);
-		file.seekg(0, file.end);
-		int length = file.tellg();
-		file.seekg(0, file.beg);
+	m_p_logger->writeLog(LogLevel::INFO, m_log_origin + " LOAD_STORED_SEQUENCES",
+		"Reading: " + std::to_string(length) + " characters");
 
-		char* buffer = new char[length];
+	function_list.reserve(10);
 
-		m_p_logger->writeLog(LogLevel::INFO, m_log_origin + " LOAD_STORED_SEQUENCES", "Reading: " + std::to_string(length) + " characters");
+	StoredFunction current_function;
 
-		file.read(buffer, length);
+	for (std::size_t i = 0; i < buffer.size(); ++i)
+	{
+		single_character = buffer[i];
 
-		file.close();
+		// Ignoriere Kommentare / Klammern / Zeilenumbrüche
+		if (single_character == "#" || single_character == "{" || single_character == "\n" || single_character == "\r")
+			continue;
 
-		//Unsafe, file could be corrupted!!
-		for (int i = 0; i < length; i++)
+		// Wenn Funktionsname erkannt, vorbereiten
+		if (temp == "WAIT" || temp == "GET_DI" || temp == "GET_DOUBLE_DI" ||
+			temp == "SWITCH_DO" || temp == "SET_DO")
 		{
-			single_character = buffer[i];
+			current_function.name = temp;
+			temp.clear();
+		}
 
-			//Check if a function name has been read. If yes clear string and prepare to read and store function arguments
-
-			if (temp == "WAIT")
+		// Argumente sammeln (',' oder '-' beendet ein Argument)
+		if (single_character == "," || single_character == "-")
+		{
+			if (!temp.empty())
 			{
-				function_types = FUNCTION_TYPES::WAIT;
-				function_list.push_back("WAIT");
-				temp.clear();
-			}
-
-			if (temp == "GET_DI")
-			{
-				function_types = FUNCTION_TYPES::GET_DIGITAL_INPUT;
-				function_list.push_back("GET_DI");
-				temp.clear();
-			}
-
-			if (temp == "GET_DOUBLE_DI")
-			{
-				function_types = FUNCTION_TYPES::GET_DOUBLE_DIGITAL_INPUT;
-				function_list.push_back("GET_DOUBLE_DI");
-				temp.clear();
-			}
-
-			if (temp == "SWITCH_DO")
-			{
-				function_types = FUNCTION_TYPES::SWITCH_DIGITAL_OUTPUT;
-				function_list.push_back("SWITCH_DO");
-				temp.clear();
-			}
-
-			if (temp == "SET_DO")
-			{
-				function_types = FUNCTION_TYPES::SET_DIGITAL_OUTPUT;
-				function_list.push_back("SET_DO");
-				temp.clear();
-			}
-
-
-			if (single_character != "#" && single_character != "{" && single_character != "}" && single_character != "\n" && single_character != "\r")
-			{
-				temp.append(single_character);
-			}
-
-			//The line from one function ends with "-", if there are two arguments for one functions, they are seperated with ","
-		/*	if (single_character == "," || single_character == "-")
-			{
-				function_arguments.push_back(temp);
-				temp.clear();
-			}*/
-
-			if (single_character == "}")//The last number doesn't have a comma following, so it has to be read when the bracelet is found
-			{
-				/*for (int i = 0; i < function_list.size(); i++)
-				{
-					m_complete_sequences.push_back({function_list.at(i),function_arguments.at(i) });
-				}*/
+				current_function.args.push_back(temp);
 				temp.clear();
 			}
 		}
+		else if (single_character == "}") // Sequenz endet, speichern
+		{
+			if (!temp.empty())
+			{
+				current_function.args.push_back(temp);
+				temp.clear();
+			}
 
+			// Funktion speichern
+			m_complete_sequences.push_back(current_function);
 
-
+			// Parser-Zustand zurücksetzen für nächste Funktion
+			current_function.name.clear();
+			current_function.args.clear();
+		}
+		else
+		{
+			// Normales Zeichen anhängen
+			temp.append(single_character);
+		}
+	}
 }
 
 void Sequence_Handler::playSequence()

@@ -27,6 +27,8 @@ public:
 
 	void loadStoredSequences(std::string path);
 
+	void loadSeq2(std::string path);
+
 	void playSequence();
 
 
@@ -46,7 +48,7 @@ private:
 
 	std::unordered_map<std::string, std::function<void(const std::vector<std::string>&)>>m_functions;
 
-	std::vector<std::unordered_map<std::string, std::function<void(const std::vector<std::string>&)>>>m_complete_sequences;
+	//std::vector<std::unordered_map<std::string, std::function<void(const std::vector<std::string>&)>>>m_complete_sequences;
 
 	void test();
 	//Map with function pointers. The functions are class methods from HW_Con. With the mapping to a string name, they are easier to connect with the function names in the .txt-file
@@ -60,6 +62,13 @@ private:
 
 	std::string m_log_origin;
 	std::string m_getProjectDirPath();
+
+	struct StoredFunction
+	{
+		std::string name;
+		std::vector<std::string> args;
+	};
+	std::vector<StoredFunction> m_complete_sequences;
 
 };
 
