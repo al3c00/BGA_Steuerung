@@ -338,11 +338,15 @@ void HW_Con::initialisePCBRelayState()
 
 bool HW_Con::getDigitalInputState(std::string name)
 {
+	std::lock_guard<std::mutex> lock(m_mutex);
+
 	return m_PCF8574_DigitalIn_Adresse_collection.at(name).is_active;
 }
 
 int HW_Con::getDoubleInputState(std::string name1, std::string name2)
 {
+	std::lock_guard<std::mutex> lock(m_mutex);
+
 	//Value in map is true when Input at D_in_X is inactive
 	uint8_t input1 = m_PCF8574_DigitalIn_Adresse_collection.at(name1).is_active;
 	uint8_t input2 = m_PCF8574_DigitalIn_Adresse_collection.at(name2).is_active;
@@ -365,6 +369,8 @@ int HW_Con::getDoubleInputState(std::string name1, std::string name2)
 
 void HW_Con::switchDigitalOutputState(std::string name)
 {
+	std::lock_guard<std::mutex> lock(m_mutex);
+
 	//Get all the states as they are currently in the pcf8574
 	//refreshDigitalOutputStates();
 
@@ -376,23 +382,23 @@ void HW_Con::switchDigitalOutputState(std::string name)
 	uint8_t msg_0_7 = 0;
 	uint8_t msg_8_15 = 0;
 
-	msg_0_7 = ((m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_0").is_active) << 7 |
-		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_1").is_active << 6) |
-		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_2").is_active << 5) |
-		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_3").is_active << 4) |
-		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_4").is_active << 3) |
-		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_5").is_active << 2) |
-		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_6").is_active << 1) |
-		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_7").is_active));
+	msg_0_7 = ((m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_7").is_active) << 7 |
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_6").is_active << 6) |
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_5").is_active << 5) |
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_4").is_active << 4) |
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_3").is_active << 3) |
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_2").is_active << 2) |
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_1").is_active << 1) |
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_0").is_active));
 		
-	msg_8_15 = ((m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_8").is_active) << 7 |
-		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_9").is_active << 6) |
-		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_10").is_active << 5) |
-		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_11").is_active << 4) |
-		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_12").is_active << 3) |
-		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_13").is_active << 2) |
-		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_14").is_active << 1) |
-		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_15").is_active));
+	msg_8_15 = ((m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_15").is_active) << 7 |
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_14").is_active << 6) |
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_13").is_active << 5) |
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_12").is_active << 4) |
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_11").is_active << 3) |
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_10").is_active << 2) |
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_9").is_active << 1) |
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_8").is_active));
 
 	wiringPiI2CWrite(m_PCF_IO_35, msg_0_7);
 	wiringPiI2CWrite(m_PCF_IO_36, msg_8_15);
@@ -402,6 +408,8 @@ void HW_Con::switchDigitalOutputState(std::string name)
 
 void HW_Con::setDigitalOutputState(bool state, std::string name)
 {
+	std::lock_guard<std::mutex> lock(m_mutex);
+
 	if (!m_PCF8574_DigitalOut_Adresse_collection.at(name).is_active == state)
 	{
 	
@@ -410,23 +418,23 @@ void HW_Con::setDigitalOutputState(bool state, std::string name)
 	uint8_t msg_0_7 = 0;
 	uint8_t msg_8_15 = 0;
 
-	msg_0_7 = ((m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_0").is_active) << 7 |
-		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_1").is_active << 6) |
-		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_2").is_active << 5) |
-		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_3").is_active << 4) |
-		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_4").is_active << 3) |
-		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_5").is_active << 2) |
-		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_6").is_active << 1) |
-		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_7").is_active));
+	msg_0_7 = ((m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_7").is_active) << 7 |
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_6").is_active << 6) |
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_5").is_active << 5) |
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_4").is_active << 4) |
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_3").is_active << 3) |
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_2").is_active << 2) |
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_1").is_active << 1) |
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_0").is_active));
 
-	msg_8_15 = ((m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_8").is_active) << 7 |
-		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_9").is_active << 6) |
-		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_10").is_active << 5) |
-		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_11").is_active << 4) |
-		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_12").is_active << 3) |
-		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_13").is_active << 2) |
-		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_14").is_active << 1) |
-		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_15").is_active));
+	msg_8_15 = ((m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_15").is_active) << 7 |
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_14").is_active << 6) |
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_13").is_active << 5) |
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_12").is_active << 4) |
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_11").is_active << 3) |
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_10").is_active << 2) |
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_9").is_active << 1) |
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_8").is_active));
 
 	wiringPiI2CWrite(m_PCF_IO_35, msg_0_7);
 	wiringPiI2CWrite(m_PCF_IO_36, msg_8_15);
@@ -435,13 +443,15 @@ void HW_Con::setDigitalOutputState(bool state, std::string name)
 
 bool HW_Con::getDigitalOutputState(std::string name)
 {
-	return false;
+	return m_PCF8574_DigitalOut_Adresse_collection.at(name).is_active;
 }
 
 
 
 void HW_Con::refreshDigitalInputStates()
 {
+	std::lock_guard<std::mutex> lock(m_mutex);
+
 	uint8_t Input = wiringPiI2CRead(m_PCF_IO_32);//Get D_In 0-7
 
 	bool ports[8];

@@ -61,6 +61,7 @@ public:
 
 private:
 
+	std::mutex m_mutex;
 
 	Log* m_p_logger;
 

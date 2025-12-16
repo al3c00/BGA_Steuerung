@@ -7,6 +7,7 @@
 #include "defines.h"
 #include "GUI.h"
 #include "HW_Con.h"
+#include "Sequence_Handler.h"
 
 
 int main()
@@ -50,13 +51,17 @@ int main()
 	GUI system_diagram(&logger, &renderer);
 
 	//Create Hardware-handling class instance
-	HW_Con hw(&logger);
-	hw.loadDigitalInputAdresses("/configs/D_In_config.txt");
-	hw.loadAnalogInputAdresses("/configs/A_In_config.txt");
-	hw.loadDigitalOutputAdresses("/configs/D_Out_config.txt");
-	hw.loadIOMapConfig("/configs/HW_IO_map_config.txt");
+	auto hw = std::make_shared<HW_Con>(&logger);
 
-	hw.initialisePCBRelayState();
+	hw->loadDigitalInputAdresses("/configs/D_In_config.txt");
+	hw->loadAnalogInputAdresses("/configs/A_In_config.txt");
+	hw->loadDigitalOutputAdresses("/configs/D_Out_config.txt");
+	hw->loadIOMapConfig("/configs/HW_IO_map_config.txt");
+
+	hw->initialisePCBRelayState();
+
+	Sequence_Handler sqh(&logger, hw);
+	sqh.playSequence();
 	
 
 	system_diagram.loadFont("ARIAL_Black", "/fonts/arial.ttf", 0, 0, 0);
@@ -98,16 +103,16 @@ int main()
 		
 
 
-		hw.refreshDigitalInputStates();
+		hw->refreshDigitalInputStates();
 
 
-		if(!hw.getDigitalInputState("D_In_1"))
+		if(!hw->getDigitalInputState("D_In_1"))
 		{ 
-			hw.setDigitalOutputState(true,"D_Out_0");
+			hw->setDigitalOutputState(true,"D_Out_0");
 		}
-		else if (hw.getDigitalInputState("D_In_1"))
+		else if (hw->getDigitalInputState("D_In_1"))
 		{
-			hw.setDigitalOutputState(false, "D_Out_0");
+			hw->setDigitalOutputState(false, "D_Out_0");
 		}
 
 		

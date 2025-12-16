@@ -394,7 +394,7 @@ void GUI::m_insertFontInMap(std::string name)
 		char temp = i + '!' -1;
 		char buf[2] = { temp, '\0' };//Add nulltermination!!
 		const char* symbol_for_Render = buf;
-		std::cout << symbol_for_Render << std::endl;
+		//std::cout << symbol_for_Render << std::endl;
 
 		s_m_font_vector_SURFACE.push_back(TTF_RenderUTF8_Solid(m_p_SDL_font, symbol_for_Render, s_m_SDL_font_color));
 
@@ -406,7 +406,7 @@ void GUI::m_insertFontInMap(std::string name)
 	{
 		char temp = i + '!' -1;
 
-		std::cout << temp << std::endl;
+		//std::cout << temp << std::endl;
 
 		s_m_font_map_TEXTURE.insert({ temp, SDL_CreateTextureFromSurface(m_p_render_instance->getRenderer(), s_m_font_vector_SURFACE.at(i))});
 	}
