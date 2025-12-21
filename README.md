@@ -9,20 +9,7 @@ Dieses Repository enthält Platine-Daten und Software zur Steuerung und Überwac
 ### Biogasanlage allgemein:
 
 Auf dem Landwirtschaftsbetrieb wird eine Biogasanalge des Types Haral-Energie geplant. Diese zeichnet sich durch den eckigen, unterirdischen Fermenter aus. Das gewonnene Gas wird in einem Blockheizkraftwerk verbrannt, wobei Wärme und im gekoppelten Generator Strom entsteht. Die Wärme wird für die Versorgung des Landwirtschaftsbetriebs genutzt, der Strom wird in das öffentliche Netz eingespiesen.
-[//]: Die Anlage besteht aus einer Vorgrube (Mischen der Substrate), einem Fermenter (Methangaserzeugung) und einem Endlager.  Im nachfolgenden Diagramm wird die Funktionsweise der Anlage schematisch dargestellt:
-[//]: ```mermaid
-[//]: graph TD;
-[//]:   Güllegrube_Schweine-->Vorgrube;
-[//]:   Güllegrube_Rinder-->Vorgrube;
-[//]:  Feststoffmischer-->Vorgrube;
-[//]:   Vorgrube-->Fermenter;
-[//]:   Fermenter-->Endlager;
-[//]:   Endlager-->Probenahme;
-[//]:   Endlager-->Vorgrube;
-[//]:   Endlager-->Betrieb;
-[//]:   Endlager-->Nachbarbetrieb;
-[//]:   Endlager-->Fassbefüllung;
-[//]: ```
+Die Anlage besteht aus einer Vorgrube (Mischen der Substrate), einem Fermenter (Methangaserzeugung) und einem Endlager.
 Gasführende Anlagenteile werden durch diese Steuerung nicht beeinflusst. 
 Für den Betrieb der gesamten Anlage sind mehrere Pumpen und Schieber sowie ein Motor für den Betrieb des Festsoffmischers nötig. Die meisten werden neu installiert und werden mit einer Schützsteuerung bedient. Für die bereits bestehende Pumpe, welche mit Funk bedient wird, wird ein stationäres Ergänzungsfunksendemodul installiert. Die Schieber werden pneumatisch gesteuert. Der Luftfluss wird mit 12v 5/2 Pneumatikventilen geregelt.
 
@@ -60,7 +47,7 @@ Es existiert mindestens eine Instaz der Klasse GUI. Damit können Bilder geladen
 Von dieser Klasse darf nur eine Instanz erzeugt werden. Mittels I2C kommuniziert der PI mit den PCF8574 auf der Platine. Die einzelnen Inputs/Outputs sind mit ihren 7-Bit I2C Adressen der Chips sowie dem Port mit string-Namen in einer Map referenziert. *Beispiel: D_Out_0 --> dec35,p0.* Für jeden Input/Output existiert eine struct "IO_Object". Die Inputs werden im Main-Loop regelmässig neu abgefragt. Bei den Outputs wird der **Soll-Zustand** in dieser struct gespeichert und übermittelt. Der Ist-Zustand kann nicht abgefragt werden.
 
 ### Sequence_Handler:
-Von dieser Klasse darf nur eine Instanz erzeugt werden. Sie lädt, speichert und organisert alle Sequenzen und überwacht deren Ausführung und gegebenenfalls bearbeitung.
+Von dieser Klasse darf nur eine Instanz erzeugt werden. Sie lädt, speichert und organisert alle Sequenzen und überwacht deren Ausführung und gegebenenfalls Bearbeitung.
 
 
 ## Weiteres
