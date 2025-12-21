@@ -9,7 +9,7 @@ Dieses Repository enthält Platine-Daten und Software zur Steuerung und Überwac
 ### Biogasanlage allgemein:
 
 Auf dem Landwirtschaftsbetrieb wird eine Biogasanalge des Types Haral-Energie geplant. Diese zeichnet sich durch den eckigen, unterirdischen Fermenter aus. Das gewonnene Gas wird in einem Blockheizkraftwerk verbrannt, wobei Wärme und im gekoppelten Generator Strom entsteht. Die Wärme wird für die Versorgung des Landwirtschaftsbetriebs genutzt, der Strom wird in das öffentliche Netz eingespiesen.
-[//]: # Die Anlage besteht aus einer Vorgrube (Mischen der Substrate), einem Fermenter (Methangaserzeugung) und einem Endlager.  Im nachfolgenden Diagramm wird die Funktionsweise der Anlage schematisch dargestellt:  
+<!--[//]: # Die Anlage besteht aus einer Vorgrube (Mischen der Substrate), einem Fermenter (Methangaserzeugung) und einem Endlager.  Im nachfolgenden Diagramm wird die Funktionsweise der Anlage schematisch dargestellt:  
 [//]: # ```mermaid  
 [//]: # graph TD;  
 [//]: #   Güllegrube_Schweine-->Vorgrube;  
@@ -22,7 +22,7 @@ Auf dem Landwirtschaftsbetrieb wird eine Biogasanalge des Types Haral-Energie ge
 [//]: #   Endlager-->Betrieb;  
 [//]: #   Endlager-->Nachbarbetrieb;  
 [//]: #   Endlager-->Fassbefüllung;  
-[//]: # ```  
+[//]: # ```-->  
 Gasführende Anlagenteile werden durch diese Steuerung nicht beeinflusst. 
 Für den Betrieb der gesamten Anlage sind mehrere Pumpen und Schieber sowie ein Motor für den Betrieb des Festsoffmischers nötig. Die meisten werden neu installiert und werden mit einer Schützsteuerung bedient. Für die bereits bestehende Pumpe, welche mit Funk bedient wird, wird ein stationäres Ergänzungsfunksendemodul installiert. Die Schieber werden pneumatisch gesteuert. Der Luftfluss wird mit 12v 5/2 Pneumatikventilen geregelt.
 
