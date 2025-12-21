@@ -47,7 +47,7 @@ Es existiert mindestens eine Instaz der Klasse GUI. Damit können Bilder geladen
 Von dieser Klasse darf nur eine Instanz erzeugt werden. Mittels I2C kommuniziert der PI mit den PCF8574 auf der Platine. Die einzelnen Inputs/Outputs sind mit ihren 7-Bit I2C Adressen der Chips sowie dem Port mit string-Namen in einer Map referenziert. *Beispiel: D_Out_0 --> dec35,p0.* Für jeden Input/Output existiert eine struct "IO_Object". Die Inputs werden im Main-Loop regelmässig neu abgefragt. Bei den Outputs wird der **Soll-Zustand** in dieser struct gespeichert und übermittelt. Der Ist-Zustand kann nicht abgefragt werden.
 
 ### Sequence_Handler:
-Von dieser Klasse darf nur eine Instanz erzeugt werden. Sie lädt, speichert und organisert alle Sequenzen und überwacht deren Ausführung und gegebenenfalls bearbeitung.
+Von dieser Klasse darf nur eine Instanz erzeugt werden. Sie lädt, speichert und organisert alle Sequenzen und überwacht deren Ausführung und gegebenenfalls Bearbeitung.
 
 
 ## Weiteres
