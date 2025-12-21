@@ -61,11 +61,13 @@ int main()
 	hw->initialisePCBRelayState();
 
 	Sequence_Handler sqh(&logger, hw);
-	sqh.playSequence();
-
-
-	sqh.loadSeq2("/configs/Sequences.txt");
 	
+
+
+	sqh.loadSeq("/configs/Sequences.txt");
+	
+	sqh.startSequence("Sequence1");
+	sqh.startSequence("Sequence2");
 	
 
 	system_diagram.loadFont("ARIAL_Black", "/fonts/arial.ttf", 0, 0, 0);

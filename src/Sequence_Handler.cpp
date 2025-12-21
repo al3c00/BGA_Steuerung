@@ -7,35 +7,6 @@ Sequence_Handler::Sequence_Handler(Log* logger, std::shared_ptr<HW_Con> hw_con)
 
 	m_log_origin = "Sequence_Handler";
 
-	
-	m_functions["GET_DI"] = [this](const  std::vector<std::string>& args)
-	{
-		bool result = m_getDigitalInputState(args.at(0));
-		std::cout << "GET_DI result: " << result << std::endl;
-	};
-
-	m_functions["GET_DOUBLE_DI"] = [this](const std::vector<std::string>& args)
-		{
-			int result = m_getDoubleInputState(args.at(0), args.at(1));
-			std::cout << "GET_DOUBLE_DI result: " << result << std::endl;
-		};
-
-	m_functions["SWITCH_DO"] = [this](const std::vector<std::string>& args)
-		{
-			m_switchDigitalOutputState(args.at(0));
-		};
-
-	m_functions["SET_DO"] = [this](const std::vector<std::string>& args)
-		{
-			bool state = (args.at(0) == "true");
-			m_setDigitalOutputState(state, args.at(1));
-		};
-
-	m_functions["WAIT"] = [](const std::vector<std::string>& args)
-	{
-			int ms = std::stoi(args.at(0));
-			std::this_thread::sleep_for(std::chrono::milliseconds(ms));
-	};
 }
 
 //void Sequence_Handler::loadStoredSequences(std::string path)
@@ -134,12 +105,19 @@ Sequence_Handler::Sequence_Handler(Log* logger, std::shared_ptr<HW_Con> hw_con)
 //
 //}
 
-void Sequence_Handler::loadSeq2(std::string path)
+void Sequence_Handler::loadSeq(std::string path)
 {
 	std::string temp;
 	std::string single_character;
-	std::vector<std::string> function_list;
-	std::vector<std::string> function_arguments;
+	std::string sequence_name;//String to hold the name of the sequence. Used in the map of complete sequences as key
+	temp.reserve(100);
+
+	int sequence_step = 0;
+	int param_int_nmbr = 0;
+	int param_string_nmbr = 0;
+
+	bool seq_step_awaits_string_params = false;//Set this variable to false if the sequence step (function) that is loaded takes integer arguments
+	bool begin_reading_seq_step_params = false;//Set this variable TRUE if the SEQ_FUNCTION_TYPE is read and the arguments are found in the .txt file (they are in () brackets)
 
 	std::ifstream file(m_getProjectDirPath() + path, std::ios::binary | std::ios::ate);
 	if (!file)
@@ -155,104 +133,163 @@ void Sequence_Handler::loadSeq2(std::string path)
 	m_p_logger->writeLog(LogLevel::INFO, m_log_origin + " LOAD_STORED_SEQUENCES",
 		"Reading: " + std::to_string(length) + " characters");
 
-	function_list.reserve(10);
-
-	StoredFunction current_function;
+	m_complete_sequence.clear();
+	m_complete_sequence.reserve(50);
 
 	for (std::size_t i = 0; i < buffer.size(); ++i)
 	{
 		single_character = buffer[i];
 
-		// Ignoriere Kommentare / Klammern / Zeilenumbrüche
-		if (single_character == "#" || single_character == "{" || single_character == "\n" || single_character == "\r")
-			continue;
-
-		// Wenn Funktionsname erkannt, vorbereiten
-		if (temp == "WAIT" || temp == "GET_DI" || temp == "GET_DOUBLE_DI" ||
-			temp == "SWITCH_DO" || temp == "SET_DO")
+		if (single_character != "#" && single_character != "{" && single_character != "}" && single_character != "(" && single_character != ")" && single_character != ";" && single_character != "\n" && single_character != "\r")
 		{
-			current_function.name = temp;
+			temp.append(single_character);
+			
+		}
+			
+		if (single_character == "{")
+		{
+			sequence_name = temp;
 			temp.clear();
 		}
 
-		// Argumente sammeln (',' oder '-' beendet ein Argument)
-		if (single_character == "," || single_character == "-")
+		//If Functiontype is found, set the correct enum
 		{
-			if (!temp.empty())
+			if (temp == "WAIT")
 			{
-				current_function.args.push_back(temp);
+				m_complete_sequence.push_back({ SEQ_FUNCTION_TYPE::NOT_DEFINED, 0, 0, "", "" });
+				m_complete_sequence.at(sequence_step).type = SEQ_FUNCTION_TYPE::WAIT;
+				seq_step_awaits_string_params = false;
 				temp.clear();
 			}
-		}
-		else if (single_character == "}") // Sequenz endet, speichern
-		{
-			if (!temp.empty())
+			else if (temp == "GET_DIGITAL_INPUT")
 			{
-				current_function.args.push_back(temp);
+				m_complete_sequence.push_back({ SEQ_FUNCTION_TYPE::NOT_DEFINED, 0, 0, "", "" });
+				m_complete_sequence.at(sequence_step).type = SEQ_FUNCTION_TYPE::GET_DIGITAL_INPUT;
+				seq_step_awaits_string_params = true;
+				temp.clear();
+			}
+			else if (temp == "GET_DOUBLE_DIGITAL_INPUT")
+			{
+				m_complete_sequence.push_back({ SEQ_FUNCTION_TYPE::NOT_DEFINED, 0, 0, "", "" });
+				m_complete_sequence.at(sequence_step).type = SEQ_FUNCTION_TYPE::GET_DOUBLE_DIGITAL_INPUT;
+				seq_step_awaits_string_params = true;
+				temp.clear();
+			}
+			else if (temp == "SWITCH_DIGITAL_OUTPUT")
+			{
+				m_complete_sequence.push_back({ SEQ_FUNCTION_TYPE::NOT_DEFINED, 0, 0, "", "" });
+				m_complete_sequence.at(sequence_step).type = SEQ_FUNCTION_TYPE::SWITCH_DIGITAL_OUTPUT;
+				seq_step_awaits_string_params = true;
+				temp.clear();
+			}
+			else if (temp == "SET_DIGITAL_OUTPUT")
+			{
+				m_complete_sequence.push_back({ SEQ_FUNCTION_TYPE::NOT_DEFINED, 0, 0, "", "" });
+				m_complete_sequence.at(sequence_step).type = SEQ_FUNCTION_TYPE::SET_DIGITAL_OUTPUT;
+				seq_step_awaits_string_params = true;
 				temp.clear();
 			}
 
-			// Funktion speichern
-			m_complete_sequences.push_back(current_function);
+			if (single_character == "(")
+			{
+				begin_reading_seq_step_params = true;
+				temp.clear();
+			}
+		}
 
-			// Parser-Zustand zurücksetzen für nächste Funktion
-			current_function.name.clear();
-			current_function.args.clear();
-		}
-		else
+		//Reading the function parameters
 		{
-			// Normales Zeichen anhängen
-			temp.append(single_character);
+			if (begin_reading_seq_step_params == true && (single_character == "," || single_character == ")"))
+			{
+				if (seq_step_awaits_string_params)
+				{
+					if (param_string_nmbr == 0)
+					{
+						m_complete_sequence.at(sequence_step).param_string1 = temp;
+						param_string_nmbr++;
+						temp.clear();
+					}
+					else if (param_string_nmbr == 1)
+					{
+						m_complete_sequence.at(sequence_step).param_string2 = temp;
+
+						temp.clear();
+					}
+
+				}
+				if (!seq_step_awaits_string_params)
+				{
+					if (param_int_nmbr == 0)
+					{
+						m_complete_sequence.at(sequence_step).param_int1 = std::stoi(temp);
+						param_int_nmbr++;
+						temp.clear();
+					}
+					else if (param_int_nmbr == 1)
+					{
+						m_complete_sequence.at(sequence_step).param_int2 = std::stoi(temp);
+						temp.clear();
+					}
+				}
+
+
+			}
 		}
+
+		//Finish reading one sequence step with ";"
+		if (single_character == ";")
+		{
+			sequence_step++;
+			param_int_nmbr = 0;
+			param_string_nmbr = 0;
+		}
+
+		//Finish reading hole sequence with "}"
+		if (single_character == "}")
+		{
+			m_complete_sequence_map.insert({ sequence_name, m_complete_sequence });
+			sequence_step = 0;
+			m_complete_sequence.clear();
+
+		}
+
 	}
 }
 
-void Sequence_Handler::playSequence()
+void Sequence_Handler::startSequence(std::string name)
 {
-	std::thread(&Sequence_Handler::test, this).detach();
+	std::thread(&Sequence_Handler::m_playSequence, this, name).detach();
 }
 
-
-
-void Sequence_Handler::m_sequence_wait(int wait_seconds)
+void Sequence_Handler::m_playSequence(std::string name)
 {
-	delay(wait_seconds);
-}
-
-bool Sequence_Handler::m_getDigitalInputState(std::string name)
-{
-	return m_p_hw_con->getDigitalInputState(name);
-}
-
-int Sequence_Handler::m_getDoubleInputState(std::string name1, std::string name2)
-{
-	return m_p_hw_con->getDoubleInputState(name1, name2);
-}
-
-void Sequence_Handler::m_switchDigitalOutputState(std::string name)
-{
-	m_p_hw_con->switchDigitalOutputState(name);
-}
-
-void Sequence_Handler::m_setDigitalOutputState(bool state, std::string name)
-{
-	m_p_hw_con->setDigitalOutputState(state, name);
-}
-
-
-
-void Sequence_Handler::test()
-{
-	for (int i = 0; i < 100; i++)
+	for (int i = 0; i < m_complete_sequence_map.at(name).size(); i++)
 	{
-		m_p_hw_con->switchDigitalOutputState("D_Out_9");
-		m_sequence_wait(1000);
+		switch (m_complete_sequence_map.at(name).at(i).type)
+		{
+		case SEQ_FUNCTION_TYPE::WAIT:
+		{
+			std::this_thread::sleep_for(std::chrono::milliseconds(m_complete_sequence_map.at(name).at(i).param_int1));
+		}break;
+		case SEQ_FUNCTION_TYPE::GET_DIGITAL_INPUT:
+		{
+			m_p_hw_con->getDigitalInputState(m_complete_sequence_map.at(name).at(i).param_string1);
+		}break;
+		case SEQ_FUNCTION_TYPE::SWITCH_DIGITAL_OUTPUT:
+		{
+			m_p_hw_con->switchDigitalOutputState(m_complete_sequence_map.at(name).at(i).param_string1);
+		}break;
+		}
 	}
-
-
-	std::cout << "Finished test sequence" << std::endl;
-
 }
+
+
+
+
+
+
+
+
 
 
 
