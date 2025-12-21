@@ -113,10 +113,11 @@ void Sequence_Handler::loadSeq(std::string path)
 	temp.reserve(100);
 
 	int sequence_step = 0;
-	int param_int_nmbr = 0;
-	int param_string_nmbr = 0;
+	int param_nmbr = 0;
+	
 
 	bool seq_step_awaits_string_params = false;//Set this variable to false if the sequence step (function) that is loaded takes integer arguments
+	bool seq_step_awaits_both_params = false;//Set this variable to true if the sequence step (function) that is loaded takes integer and string arguments. E.g. PROGRESS_IF. There can only (!!) be written one int and one string argument
 	bool begin_reading_seq_step_params = false;//Set this variable TRUE if the SEQ_FUNCTION_TYPE is read and the arguments are found in the .txt file (they are in () brackets)
 
 	std::ifstream file(m_getProjectDirPath() + path, std::ios::binary | std::ios::ate);
@@ -140,7 +141,7 @@ void Sequence_Handler::loadSeq(std::string path)
 	{
 		single_character = buffer[i];
 
-		if (single_character != "#" && single_character != "{" && single_character != "}" && single_character != "(" && single_character != ")" && single_character != ";" && single_character != "\n" && single_character != "\r")
+		if (single_character != "#" && single_character != "{" && single_character != " " && single_character != "}" && single_character != "," && single_character != "(" && single_character != ")" && single_character != ";" && single_character != "\n" && single_character != "\r")
 		{
 			temp.append(single_character);
 			
@@ -159,6 +160,14 @@ void Sequence_Handler::loadSeq(std::string path)
 				m_complete_sequence.push_back({ SEQ_FUNCTION_TYPE::NOT_DEFINED, 0, 0, "", "" });
 				m_complete_sequence.at(sequence_step).type = SEQ_FUNCTION_TYPE::WAIT;
 				seq_step_awaits_string_params = false;
+				temp.clear();
+			}
+			else if (temp == "PROGRESS_IF")
+			{
+				m_complete_sequence.push_back({ SEQ_FUNCTION_TYPE::NOT_DEFINED, 0, 0, "", "" });
+				m_complete_sequence.at(sequence_step).type = SEQ_FUNCTION_TYPE::PROGRESS_IF;
+				seq_step_awaits_string_params = false;
+				seq_step_awaits_both_params = true;
 				temp.clear();
 			}
 			else if (temp == "GET_DIGITAL_INPUT")
@@ -190,6 +199,7 @@ void Sequence_Handler::loadSeq(std::string path)
 				temp.clear();
 			}
 
+
 			if (single_character == "(")
 			{
 				begin_reading_seq_step_params = true;
@@ -201,34 +211,58 @@ void Sequence_Handler::loadSeq(std::string path)
 		{
 			if (begin_reading_seq_step_params == true && (single_character == "," || single_character == ")"))
 			{
-				if (seq_step_awaits_string_params)
+				if (seq_step_awaits_string_params && !seq_step_awaits_both_params)
 				{
-					if (param_string_nmbr == 0)
+					if (param_nmbr == 0)
 					{
 						m_complete_sequence.at(sequence_step).param_string1 = temp;
-						param_string_nmbr++;
+						param_nmbr++;
 						temp.clear();
 					}
-					else if (param_string_nmbr == 1)
+					else if (param_nmbr == 1)
 					{
 						m_complete_sequence.at(sequence_step).param_string2 = temp;
-
+						param_nmbr = 0;
 						temp.clear();
 					}
 
 				}
-				if (!seq_step_awaits_string_params)
+				else if (!seq_step_awaits_string_params && !seq_step_awaits_both_params)
 				{
-					if (param_int_nmbr == 0)
+					if (param_nmbr == 0)
 					{
 						m_complete_sequence.at(sequence_step).param_int1 = std::stoi(temp);
-						param_int_nmbr++;
+						param_nmbr++;
 						temp.clear();
 					}
-					else if (param_int_nmbr == 1)
+					else if (param_nmbr == 1)
 					{
 						m_complete_sequence.at(sequence_step).param_int2 = std::stoi(temp);
+						param_nmbr = 0;
 						temp.clear();
+					}
+				}
+				else if (seq_step_awaits_both_params)
+				{
+					if (param_nmbr == 0)
+					{
+						m_complete_sequence.at(sequence_step).param_int1 = std::stoi(temp);
+						param_nmbr++;
+						temp.clear();
+					}
+					else if (param_nmbr == 1)
+					{
+						m_complete_sequence.at(sequence_step).param_string1 = temp;
+						temp.clear();
+						param_nmbr++;
+					}
+					else if (param_nmbr == 2)
+					{
+						m_complete_sequence.at(sequence_step).param_string2 = temp;
+						temp.clear();
+						seq_step_awaits_both_params = false;
+						param_nmbr = 0;
+
 					}
 				}
 
@@ -240,8 +274,8 @@ void Sequence_Handler::loadSeq(std::string path)
 		if (single_character == ";")
 		{
 			sequence_step++;
-			param_int_nmbr = 0;
-			param_string_nmbr = 0;
+			param_nmbr = 0;
+			
 		}
 
 		//Finish reading hole sequence with "}"
@@ -255,6 +289,8 @@ void Sequence_Handler::loadSeq(std::string path)
 
 	}
 }
+
+//enum SEQ_FUNCTION_TYPE { NOT_DEFINED, WAIT, PROGRESS_IF_A, GET_DIGITAL_INPUT, GET_DOUBLE_DIGITAL_INPUT, GET_ANALOG_INPUT, SET_DIGITAL_OUTPUT, SWITCH_DIGITAL_OUTPUT };
 
 void Sequence_Handler::startSequence(std::string name)
 {
@@ -271,10 +307,67 @@ void Sequence_Handler::m_playSequence(std::string name)
 		{
 			std::this_thread::sleep_for(std::chrono::milliseconds(m_complete_sequence_map.at(name).at(i).param_int1));
 		}break;
+		case SEQ_FUNCTION_TYPE::PROGRESS_IF_1:
+		{
+			int should_be_value = m_complete_sequence_map.at(name).at(i).param_int1;
+			std::string input_to_check1 = m_complete_sequence_map.at(name).at(i).param_string1;
+			bool check_digital = false;
+			int return_value;
+
+			//Very weird and messed up part :) To get the type of input that should be checked, use pop_back on the string until only the firs symbol (A/D) is left
+		
+			char check_symbol = input_to_check1.at(0);
+
+
+			//Check if a Digital or Analog Input should be read. Remove the last few symbols from the param to check (A_In_Xx or D_In_Xx) Check only the first symbol 
+			if (check_symbol == 'A')
+			{
+				check_digital = false;
+			}
+			else if (check_symbol == 'D')
+			{
+				check_digital = true;
+			}
+			do
+			{
+				if (check_digital)
+				{
+					return_value = m_p_hw_con->getDigitalInputState(input_to_check1);
+				}
+				else if (!check_digital)
+				{
+					//return_value = m_p_hw_con->getDigitalInputState(m_complete_sequence_map.at(name).at(i).param_string1);
+				}
+				std::this_thread::sleep_for(std::chrono::milliseconds(50));
+
+			} while (return_value != should_be_value);
+
+		}break;
+
+		case SEQ_FUNCTION_TYPE::PROGRESS_IF_2:
+		{
+			int should_be_value = m_complete_sequence_map.at(name).at(i).param_int1;
+			std::string input_to_check1 = m_complete_sequence_map.at(name).at(i).param_string1;
+			std::string input_to_check2 = m_complete_sequence_map.at(name).at(i).param_string2;
+			int return_value = 0;
+
+			//Can only be used on digital inputs
+		
+			do
+			{
+				
+				return_value = m_p_hw_con->getDoubleInputState(input_to_check1, input_to_check2);
+			
+				std::this_thread::sleep_for(std::chrono::milliseconds(50));
+
+			} while (return_value != should_be_value);
+		}break;
+
 		case SEQ_FUNCTION_TYPE::GET_DIGITAL_INPUT:
 		{
 			m_p_hw_con->getDigitalInputState(m_complete_sequence_map.at(name).at(i).param_string1);
 		}break;
+	
 		case SEQ_FUNCTION_TYPE::SWITCH_DIGITAL_OUTPUT:
 		{
 			m_p_hw_con->switchDigitalOutputState(m_complete_sequence_map.at(name).at(i).param_string1);
@@ -282,12 +375,6 @@ void Sequence_Handler::m_playSequence(std::string name)
 		}
 	}
 }
-
-
-
-
-
-
 
 
 

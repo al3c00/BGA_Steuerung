@@ -340,6 +340,8 @@ bool HW_Con::getDigitalInputState(std::string name)
 {
 	std::lock_guard<std::mutex> lock(m_mutex);
 
+	//std::cout << "Search for: " << name << " lenght: " << name.length() << std::endl;
+
 	return m_PCF8574_DigitalIn_Adresse_collection.at(name).is_active;
 }
 

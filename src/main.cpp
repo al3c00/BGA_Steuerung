@@ -113,19 +113,23 @@ int main()
 		hw->refreshDigitalInputStates();
 
 
-		if(!hw->getDigitalInputState("D_In_1"))
-		{ 
-			hw->setDigitalOutputState(true,"D_Out_0");
-		}
-		else if (hw->getDigitalInputState("D_In_1"))
-		{
-			hw->setDigitalOutputState(false, "D_Out_0");
-		}
+	
 
 		
 
 		if (total_time_last_frame.count() > 1000/target_fps)
 		{	
+
+			if (!hw->getDigitalInputState("D_In_1"))
+			{
+				hw->setDigitalOutputState(true, "D_Out_0");
+			}
+			else if (hw->getDigitalInputState("D_In_1"))
+			{
+				hw->setDigitalOutputState(false, "D_Out_0");
+			}
+
+
 			//Get system time
 			time = now;
 			current_time = std::chrono::system_clock::to_time_t(time);
