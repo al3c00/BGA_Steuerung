@@ -57,7 +57,11 @@ public:
 
 
 	void refreshDigitalInputStates();
-	
+
+	bool getDigitalGPIOState(int pin);//Use BCM Pin name
+
+
+	void setUpDigitalGPIOPinINPUT(int pin);//Use BCM Pin name
 
 private:
 

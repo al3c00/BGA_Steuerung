@@ -12,6 +12,10 @@ HW_Con::HW_Con(Log* logger)
 	m_PCF_IO_35 = wiringPiI2CSetupInterface("/dev/i2c-1", 35);
 	m_PCF_IO_36 = wiringPiI2CSetupInterface("/dev/i2c-1", 36);
 
+	wiringPiSetupGpio();
+	
+
+
 }
 
 void HW_Con::loadDigitalInputAdresses(std::string path)
@@ -501,6 +505,24 @@ void HW_Con::refreshDigitalInputStates()
 	m_PCF8574_DigitalIn_Adresse_collection.at("D_In_22").is_active = ports[6];
 	m_PCF8574_DigitalIn_Adresse_collection.at("D_In_23").is_active = ports[7];
 
+}
+
+bool HW_Con::getDigitalGPIOState(int pin)
+{
+	if (digitalRead(pin))
+	{
+		return true;
+	}
+
+	else
+	{
+		return false;
+	}
+}
+
+void HW_Con::setUpDigitalGPIOPinINPUT(int pin)
+{
+	pinMode(pin, INPUT);
 }
 
 

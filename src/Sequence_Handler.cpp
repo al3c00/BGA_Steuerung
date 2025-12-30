@@ -162,10 +162,10 @@ void Sequence_Handler::loadSeq(std::string path)
 				seq_step_awaits_string_params = false;
 				temp.clear();
 			}
-			else if (temp == "PROGRESS_IF")
+			else if (temp == "PROGRESS_IF_1")
 			{
 				m_complete_sequence.push_back({ SEQ_FUNCTION_TYPE::NOT_DEFINED, 0, 0, "", "" });
-				m_complete_sequence.at(sequence_step).type = SEQ_FUNCTION_TYPE::PROGRESS_IF;
+				m_complete_sequence.at(sequence_step).type = SEQ_FUNCTION_TYPE::PROGRESS_IF_1;
 				seq_step_awaits_string_params = false;
 				seq_step_awaits_both_params = true;
 				temp.clear();
@@ -260,7 +260,7 @@ void Sequence_Handler::loadSeq(std::string path)
 					{
 						m_complete_sequence.at(sequence_step).param_string2 = temp;
 						temp.clear();
-						seq_step_awaits_both_params = false;
+						
 						param_nmbr = 0;
 
 					}
@@ -275,6 +275,7 @@ void Sequence_Handler::loadSeq(std::string path)
 		{
 			sequence_step++;
 			param_nmbr = 0;
+			seq_step_awaits_both_params = false;
 			
 		}
 

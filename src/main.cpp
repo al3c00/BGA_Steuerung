@@ -114,7 +114,7 @@ int main()
 
 
 	
-
+		
 		
 
 		if (total_time_last_frame.count() > 1000/target_fps)
@@ -129,6 +129,8 @@ int main()
 				hw->setDigitalOutputState(false, "D_Out_0");
 			}
 
+			std::cout << "digital Pin 8: " << hw->getDigitalGPIOState(8) << std::endl;
+			std::cout << "digital Pin 24: " << hw->getDigitalGPIOState(24) << std::endl;
 
 			//Get system time
 			time = now;
