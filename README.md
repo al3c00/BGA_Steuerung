@@ -27,14 +27,14 @@ Das Programm lädt Sequenzen, die zu einem bestimmten Zeitpunkt abgespielt werde
 Es können folgende Funktionen verwendet werden:
 |Funktionsname|Beschrieb|Parameter_int1|Parameter_int2|Parameter_string1|Parameter_string2|
 |---|---|---|---|---|---|
-|+ WAIT|Stoppt die Ausführung der Sequenz indem der Thread mittels std::this_thread::sleep_for angehalten wird|Wartezeit in Millisekunden (ms)|-|-|-|
-|+ PROGRESS_IF|Die Ausführung der Sequenz wird angehalten bis eine bestimmte Bedingung erfüllt ist|int_Zustand, der zu erfüllen ist|-|Input, der abgefragt wird|string-Zustand, der zu erfüllen ist|
-|+ GET_DIGITAL_INPUT|Der aktuelle Zustand eines digitalen Inputs wird abgefragt|-|-|Input, der abgefragt wird|-|
-|+ GET_DOUBLE_DIGITAL_INPUT|Die Funktion "getDoubleInputState" wird verwendet, um die Sensorwerte eines mechanischen Bauteils, dass Stellung An und Aus überwacht (nicht nur eine von beiden) zu überprüfen|-|-|Input1, der abgefragt wird|Input2, der abgefragt wird|
-|+ GET_ANALOG_INPUT|Der aktuelle Zustand eines analogen Inputs wird abgefragt|-|-|Input, der abgefragt wird|-|
-|+ SET_DIGITAL_OUTPUT|Der Zustand eines digitalen Outputs wird unabhängig von seinem aktuellen Zustand gesetzt|Zustand, der gesetzt werden soll (0/1, eigentlich Bool)|-|Output, der gesetzt werden soll|-|
-|+ SWITCH_DIGITAL_OUTPUT|Der Zustand eines digitalen Outputs wird abhängig von seinem aktuellen Zustand ins Gegenteil gesetzt|-|-|Output, der gesetzt werden soll|-|
-|+ NOT_DEFINED|Wird verwendet, um Fehler abzufangen und die struct zu konstruieren
+|WAIT|Stoppt die Ausführung der Sequenz indem der Thread mittels std::this_thread::sleep_for angehalten wird|Wartezeit in Millisekunden (ms)|-|-|-|
+|PROGRESS_IF|Die Ausführung der Sequenz wird angehalten bis eine bestimmte Bedingung erfüllt ist|int_Zustand, der zu erfüllen ist|-|Input, der abgefragt wird|string-Zustand, der zu erfüllen ist|
+|GET_DIGITAL_INPUT|Der aktuelle Zustand eines digitalen Inputs wird abgefragt|-|-|Input, der abgefragt wird|-|
+|GET_DOUBLE_DIGITAL_INPUT|Die Funktion "getDoubleInputState" wird verwendet, um die Sensorwerte eines mechanischen Bauteils, dass Stellung An und Aus überwacht (nicht nur eine von beiden) zu überprüfen|-|-|Input1, der abgefragt wird|Input2, der abgefragt wird|
+|GET_ANALOG_INPUT|Der aktuelle Zustand eines analogen Inputs wird abgefragt|-|-|Input, der abgefragt wird|-|
+|SET_DIGITAL_OUTPUT|Der Zustand eines digitalen Outputs wird unabhängig von seinem aktuellen Zustand gesetzt|Zustand, der gesetzt werden soll (0/1, eigentlich Bool)|-|Output, der gesetzt werden soll|-|
+|SWITCH_DIGITAL_OUTPUT|Der Zustand eines digitalen Outputs wird abhängig von seinem aktuellen Zustand ins Gegenteil gesetzt|-|-|Output, der gesetzt werden soll|-|
+|NOT_DEFINED|Wird verwendet, um Fehler abzufangen und die struct zu konstruieren
 
 ## Software:
 ### Allgemein:
