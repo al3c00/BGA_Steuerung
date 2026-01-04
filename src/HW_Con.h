@@ -2,8 +2,13 @@
 #define HW_CON.h
 
 #define GPIO_BCM_BUTTON4	8
+#define GPIO_BCM_BUTTON3	25
+#define GPIO_BCM_BUTTON2	24
+#define GPIO_BCM_BUTTON1	23
+
 #define GPIO_BCM_ENCODER_A	7
 #define GPIO_BCM_ENCODER_B	1
+#define GPIO_BCM_ENCODER_PUSH 16
 
 #include <map>
 #include <bitset>
@@ -71,8 +76,13 @@ public:
 	bool getDigitalGPIOState(int pin);//Use BCM Pin name
 	
 	bool getButton4Press();
+	bool getButton3Press();
+	bool getButton2Press();
+	bool getButton1Press();
+	bool getEncoderPush();
 
 	int getEncoderDirection();
+	
 
 	//!Directly connected functions
 
@@ -88,7 +98,11 @@ private:
 
 	bool m_flag_encoder_a;
 	bool m_flag_encoder_b;
+	bool m_flag_encoder_push;
 	bool m_flag_button4;
+	bool m_flag_button3;
+	bool m_flag_button2;
+	bool m_flag_button1;
 
 	std::mutex m_mutex;
 	Log* m_p_logger;

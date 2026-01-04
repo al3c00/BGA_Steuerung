@@ -92,6 +92,12 @@ public:
 
 	//@brief Switches the cursors state (On/Off)
 	void switchCursorState();
+	
+	//@brief Sets the cursor into specific state and doesn't care, if it's already in this state
+	//@param cursor_state True to show the cursor, false to hide
+	void setCursorState(bool cursor_state);
+
+	void useCursorInput();
 
 	//@brief Function to change the selected object
 	//@param direction Direction in which the cursor should be moved (-1 / +1)

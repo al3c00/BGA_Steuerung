@@ -30,8 +30,9 @@ public:
 
 	void startSequence(std::string name);
 
-	
-
+	//@brief Gets the sequence as a string with "NEWLINE" for every new line
+	//@param name name of the sequence
+	std::string getSequenceFunctions(std::string name);
 
 
 private:
@@ -43,7 +44,7 @@ private:
 
 	std::mutex m_HW_Con_mutex;
 
-	enum SEQ_FUNCTION_TYPE {NOT_DEFINED, WAIT, WAIT_UNTIL, PROGRESS_IF_1, PROGRESS_IF_2, GET_DIGITAL_INPUT, GET_DOUBLE_DIGITAL_INPUT, GET_ANALOG_INPUT, SET_DIGITAL_OUTPUT, SWITCH_DIGITAL_OUTPUT};
+	enum SEQ_FUNCTION_TYPE {NOT_DEFINED, WAIT, PROGRESS_IF_1, PROGRESS_IF_2, GET_DIGITAL_INPUT, GET_DOUBLE_DIGITAL_INPUT, GET_ANALOG_INPUT, SET_DIGITAL_OUTPUT, SWITCH_DIGITAL_OUTPUT};
 
 	//Struct to describe one step/function in the sequences. Holds the function type as enum SEQ_FUNCTION_TYPE and 3 int parameters
 	struct Seq_Part_Info
@@ -58,7 +59,8 @@ private:
 	std::vector<Seq_Part_Info>m_complete_sequence;
 
 	std::map<std::string, std::vector<Seq_Part_Info>>m_complete_sequence_map;//Map that holds all the loades sequences. The sequences can be addressed by their string key
-
+	
+	std::map<std::string, std::thread>m_running_sequences_map;//Map that holds all the running thread
 
 
 

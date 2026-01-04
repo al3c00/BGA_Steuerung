@@ -14,13 +14,27 @@ HW_Con::HW_Con(Log* logger)
 
 	wiringPiSetupGpio();
 	
-	pinMode(GPIO_BCM_BUTTON4, INPUT);
+	
 	pinMode(GPIO_BCM_ENCODER_A, INPUT);
 	pinMode(GPIO_BCM_ENCODER_B, INPUT);
+	pinMode(GPIO_BCM_ENCODER_PUSH, INPUT);
+
+	pinMode(GPIO_BCM_BUTTON4, INPUT);
+	pinMode(GPIO_BCM_BUTTON3, INPUT);
+	pinMode(GPIO_BCM_BUTTON2, INPUT);
+	pinMode(GPIO_BCM_BUTTON1, INPUT);
+
 
 	m_flag_encoder_a = false;
 	m_flag_encoder_b = false;
+	m_flag_encoder_push = false;
+
 	m_flag_button4 = false;
+	m_flag_button3 = false;
+	m_flag_button2 = false;
+	m_flag_button1 = false;
+	
+
 	m_direction_has_been_used = false;
 	m_encoder_direction = 0;
 	
@@ -584,13 +598,73 @@ bool HW_Con::getDigitalGPIOState(int pin)
 
 bool HW_Con::getButton4Press()
 {
-	if (digitalRead(8) && m_flag_button4 == false)
+	if (digitalRead(GPIO_BCM_BUTTON4) && m_flag_button4 == false)
 	{
 		m_flag_button4 = true;
 	}
-	if (!digitalRead(8) && m_flag_button4 == true)
+	if (!digitalRead(GPIO_BCM_BUTTON4) && m_flag_button4 == true)
 	{
 		m_flag_button4 = false;
+		return true;
+	}
+
+	return false;
+}
+
+bool HW_Con::getButton3Press()
+{
+	if (digitalRead(GPIO_BCM_BUTTON3) && m_flag_button3 == false)
+	{
+		m_flag_button3 = true;
+	}
+	if (!digitalRead(GPIO_BCM_BUTTON3) && m_flag_button3 == true)
+	{
+		m_flag_button3 = false;
+		return true;
+	}
+
+	return false;
+}
+
+bool HW_Con::getButton2Press()
+{
+	if (digitalRead(GPIO_BCM_BUTTON2) && m_flag_button2 == false)
+	{
+		m_flag_button2 = true;
+	}
+	if (!digitalRead(GPIO_BCM_BUTTON2) && m_flag_button2 == true)
+	{
+		m_flag_button2 = false;
+		return true;
+	}
+
+	return false;
+}
+
+bool HW_Con::getButton1Press()
+{
+	if (digitalRead(GPIO_BCM_BUTTON1) && m_flag_button1 == false)
+	{
+		m_flag_button1 = true;
+	}
+	if (!digitalRead(GPIO_BCM_BUTTON1) && m_flag_button1 == true)
+	{
+		m_flag_button1 = false;
+		return true;
+	}
+
+	return false;
+}
+
+bool HW_Con::getEncoderPush()
+{
+	if (digitalRead(GPIO_BCM_ENCODER_PUSH) && m_flag_encoder_push == false)
+	{
+		m_flag_encoder_push = true;
+	}
+	if (!digitalRead(GPIO_BCM_ENCODER_PUSH) && m_flag_encoder_push == true)
+	{
+		m_flag_encoder_push = false;
 		return true;
 	}
 

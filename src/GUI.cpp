@@ -132,6 +132,11 @@ void GUI::switchCursorState()
 	m_cursor_active = !m_cursor_active;
 }
 
+void GUI::setCursorState(bool cursor_state)
+{
+	m_cursor_active = cursor_state;
+}
+
 void GUI::moveCursor(int direction)
 {
 	if(direction)

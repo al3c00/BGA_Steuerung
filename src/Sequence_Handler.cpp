@@ -295,7 +295,20 @@ void Sequence_Handler::loadSeq(std::string path)
 
 void Sequence_Handler::startSequence(std::string name)
 {
-	std::thread(&Sequence_Handler::m_playSequence, this, name).detach();
+	m_running_sequences_map.insert({ name, std::thread(&Sequence_Handler::m_playSequence, this, name) });
+}
+
+std::string Sequence_Handler::getSequenceFunctions(std::string name)
+{
+	std::string names;
+	
+	for (auto const& i : m_running_sequences_map)
+	{
+		names.append(i.first);
+		names.append("       ");
+	}
+
+	return names;
 }
 
 void Sequence_Handler::m_playSequence(std::string name)

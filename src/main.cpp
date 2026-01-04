@@ -18,7 +18,7 @@ int main()
 
 	SDL_Window* window;
 
-
+	enum GUI_STATE{SYSTEM_DIAGRAM, SEQUENCE_OVERVIEW}gui_state;
 
 	//Initialize SDL
 	if (SDL_InitSubSystem(NULL) < 0)//Return Value: 0 on success, negative value on failure
@@ -51,6 +51,8 @@ int main()
 	//Create GUI instance (main gui)
 	GUI system_diagram(&logger, &renderer);
 
+	GUI sequence_overview(&logger, &renderer);
+
 	//Create Hardware-handling class instance
 	auto hw = std::make_shared<HW_Con>(&logger);
 
@@ -58,7 +60,6 @@ int main()
 	hw->loadAnalogInputAdresses("/configs/A_In_config.txt");
 	hw->loadDigitalOutputAdresses("/configs/D_Out_config.txt");
 	hw->loadIOMapConfig("/configs/HW_IO_map_config.txt");
-
 	hw->initialisePCBRelayState();
 
 	Sequence_Handler sqh(&logger, hw);
@@ -66,7 +67,6 @@ int main()
 
 
 	sqh.loadSeq("/configs/Sequences.txt");
-	
 	sqh.startSequence("Sequence1");
 	sqh.startSequence("Sequence2");
 	
@@ -81,7 +81,11 @@ int main()
 
 	system_diagram.loadXYWHPosition("/resource/drawable_objects_positions.txt");
 
-	
+
+
+	sequence_overview.loadFont("ARIAL_Black", "/fonts/arial.ttf", 0, 0, 0);
+
+
 
 	std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
 	std::chrono::system_clock::time_point last_frame = std::chrono::system_clock::now();
@@ -101,6 +105,8 @@ int main()
 	//	draw things in backbuffer, from back to front
 	//	show things
 	//}
+
+	gui_state = GUI_STATE::SYSTEM_DIAGRAM;
 	
 	int rotation = 0;
 	do
@@ -132,10 +138,16 @@ int main()
 
 			if (hw->getButton4Press())
 			{
-				system_diagram.switchCursorState();
+				if (gui_state == GUI_STATE::SYSTEM_DIAGRAM)
+				{
+					gui_state = GUI_STATE::SEQUENCE_OVERVIEW;
+					system_diagram.setCursorState(false);
+				}
+				else if (gui_state == GUI_STATE::SEQUENCE_OVERVIEW)
+				{
+					gui_state = GUI_STATE::SYSTEM_DIAGRAM;
+				}
 			}
-
-			system_diagram.moveCursor(hw->getEncoderDirection());
 
 			/*std::cout << "Button4: " << hw->getDigitalGPIOState(GPIO_BCM_BUTTON4) << std::endl;
 			std::cout << "EncoderA: " << hw->getDigitalGPIOState(GPIO_BCM_ENCODER_A) << std::endl;
@@ -151,33 +163,53 @@ int main()
 			renderer.clearRender();
 			//m_p_renderer->prepareRender();
 
+				if (gui_state == GUI_STATE::SYSTEM_DIAGRAM)
+				{
 
-			
 
-			system_diagram.drawBackGroundColor(225,225,225);
-			system_diagram.drawPreloadedTexture(0, 0, 800, 480, "Schema");
+				if (hw->getEncoderPush())
+				{
+					system_diagram.switchCursorState();
+				}
 
-			system_diagram.drawPreloadedTextureXYWH("Pumpe1_Aktiv", rotation, "Circular_Arrow");
-			system_diagram.drawPreloadedTextureXYWH("Pumpe2_Aktiv", rotation, "Circular_Arrow");
-			system_diagram.drawPreloadedTextureXYWH("Mischer_Schnecke_Aktiv", rotation, "Circular_Arrow");
-			system_diagram.drawPreloadedTextureXYWH("Schieber_Schweineguelle_Status", hw->getDoubleInputState("D_In_0", "D_In_1"));
-			system_diagram.drawPreloadedTextureXYWH("Schieber_Mischer_Status", 270, "Schieber_Geschlossen");
-			system_diagram.drawPreloadedTextureXYWH("Schieber_Probenahme_Status", "Schieber_Geschlossen");
-			system_diagram.drawPreloadedTextureXYWH("Schieber_GF_Status", "Schieber_Geschlossen");
-			system_diagram.drawPreloadedTextureXYWH("Schieber_GSD_Status", "Schieber_Geschlossen");
-			system_diagram.drawPreloadedTextureXYWH("Schieber_Fassbefuellung_Status", "Schieber_Geschlossen");
-			system_diagram.drawPreloadedTextureXYWH("Schieber_Rueckfuehrung_Status", "Schieber_Offen");
-		
-			//system_diagram.drawPreloadedTexture(80, 186, 15, 15, rotation, "Arrow_Active");
-			//system_diagram.drawText_l(50, 200, "Hello World", "ARIAL_Black");
-			//system_diagram.drawText_l(80, 400, "Hello World", "ARIAL_Black");
-			system_diagram.drawText_l(349, 112, std::to_string(4850) + "kg", "ARIAL_Black");
-			system_diagram.drawText_l(349, 130, std::to_string(75) + "%", "ARIAL_Black");
-			system_diagram.drawText_l(7, 9, str_current_time, "ARIAL_Black");
-			system_diagram.drawText_l(231, 9, "FPS: " + std::to_string(target_fps), "ARIAL_Black");
-			system_diagram.drawText_r(473, 9, "Time(ms)/frame: " + std::to_string((int)total_time_last_frame.count()), "ARIAL_Black");
+				system_diagram.moveCursor(hw->getEncoderDirection());
 
-			system_diagram.drawCursor();
+
+				system_diagram.drawBackGroundColor(225, 225, 225);
+				system_diagram.drawPreloadedTexture(0, 0, 800, 480, "Schema");
+
+				system_diagram.drawPreloadedTextureXYWH("Pumpe1_Aktiv", rotation, "Circular_Arrow");
+				system_diagram.drawPreloadedTextureXYWH("Pumpe2_Aktiv", rotation, "Circular_Arrow");
+				system_diagram.drawPreloadedTextureXYWH("Mischer_Schnecke_Aktiv", rotation, "Circular_Arrow");
+				system_diagram.drawPreloadedTextureXYWH("Schieber_Schweineguelle_Status", hw->getDoubleInputState("D_In_0", "D_In_1"));
+				system_diagram.drawPreloadedTextureXYWH("Schieber_Mischer_Status", 270, "Schieber_Geschlossen");
+				system_diagram.drawPreloadedTextureXYWH("Schieber_Probenahme_Status", "Schieber_Geschlossen");
+				system_diagram.drawPreloadedTextureXYWH("Schieber_GF_Status", "Schieber_Geschlossen");
+				system_diagram.drawPreloadedTextureXYWH("Schieber_GSD_Status", "Schieber_Geschlossen");
+				system_diagram.drawPreloadedTextureXYWH("Schieber_Fassbefuellung_Status", "Schieber_Geschlossen");
+				system_diagram.drawPreloadedTextureXYWH("Schieber_Rueckfuehrung_Status", "Schieber_Offen");
+
+				//system_diagram.drawPreloadedTexture(80, 186, 15, 15, rotation, "Arrow_Active");
+				//system_diagram.drawText_l(50, 200, "Hello World", "ARIAL_Black");
+				//system_diagram.drawText_l(80, 400, "Hello World", "ARIAL_Black");
+				system_diagram.drawText_l(349, 112, std::to_string(4850) + "kg", "ARIAL_Black");
+				system_diagram.drawText_l(349, 130, std::to_string(75) + "%", "ARIAL_Black");
+				system_diagram.drawText_l(7, 9, str_current_time, "ARIAL_Black");
+				system_diagram.drawText_l(231, 9, "FPS: " + std::to_string(target_fps), "ARIAL_Black");
+				system_diagram.drawText_r(473, 9, "Time(ms)/frame: " + std::to_string((int)total_time_last_frame.count()), "ARIAL_Black");
+
+				system_diagram.drawCursor();
+
+				}
+
+				else if (gui_state == GUI_STATE::SEQUENCE_OVERVIEW)
+				{
+					sequence_overview.drawText_l(7, 9, str_current_time, "ARIAL_Black");
+					sequence_overview.drawText_l(231, 9, "FPS: " + std::to_string(target_fps), "ARIAL_Black");
+					sequence_overview.drawText_r(473, 9, "Time(ms)/frame: " + std::to_string((int)total_time_last_frame.count()), "ARIAL_Black");
+
+					sequence_overview.drawText_r(473, 40, sqh.getSequenceFunctions("hallo"),  "ARIAL_Black");
+				}
 
 			renderer.Show();
 
