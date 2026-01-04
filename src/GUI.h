@@ -25,9 +25,6 @@ public:
 
 	
 	void drawBackGroundColor(int r, int g, int b);
-	void drawObject(int x_pos, int y_pos, int height, int width, std::string path);
-	void drawObject(int x_pos, int y_pos, int height, int width, int r, int g, int b);
-	//void drawObject(int x_pos, int y_pos, int height, int width, int r, int g, int b, int a);
 
 	void drawPreloadedTexture(int x_pos, int y_pos, int height, int width, std::string name);
 	void drawPreloadedTexture(int x_pos, int y_pos, int height, int width, int rotation, std::string name);
@@ -42,9 +39,6 @@ public:
 	void drawPreloadedTextureXYWH(std::string object_name, int rotation, std::string texture_name);
 	void drawPreloadedTextureXYWH(std::string object_name, int state);
 
-
-	//@brief Function to draw a rectangle arround the currently selected object
-	void drawCursor();
 
 	//@brief Function to draw the text in the backbuffer
 	//@param x_pos x-Position (Bottom left of the text element)
@@ -92,12 +86,26 @@ public:
 	void loadFont(std::string name, std::string path, int r, int g, int b);
 
 
+	//@brief Function to draw a rectangle arround the currently selected object
+	//@brief Call this function one time per frame. The cursor is only drawn when "m_cursor_active" is active. Set with switchCursorActive
+	void drawCursor();
 
+	//@brief Switches the cursors state (On/Off)
+	void switchCursorState();
+
+	//@brief Function to change the selected object
+	//@param direction Direction in which the cursor should be moved (-1 / +1)
+	void moveCursor(int direction);
 
 	//void TESTDRAWTEXT();
 
 
 private:
+
+	//Currently object to draw the cursor around
+	int m_currently_selected_object_for_cursor;
+	int m_ammount_selectable_objects;
+	bool m_cursor_active;
 
 	Render* m_p_render_instance;
 	Log* m_p_logger;
@@ -133,6 +141,7 @@ private:
 		int width;
 		int height;
 		bool selectable;
+		int nmbr_selectable_object; //Holds the number used by the cursor to address it
 
 	}m_drawn_elements_list;
 
@@ -150,7 +159,7 @@ private:
 		uint16_t ypos;
 		uint16_t width;
 		uint16_t height;
-		bool selectable;
+		int nmbr_selectable_object; //Holds the number used by the cursor to address it
 	}m_element_pos;//Struct to save the element info temporary
 
 	std::map<std::string, Element_Pos> m_loaded_elements_pos;//Map to save the element info while the programm is running. Get infos about a specific object by the name it is called in the .txt file

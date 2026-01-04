@@ -14,8 +14,70 @@ HW_Con::HW_Con(Log* logger)
 
 	wiringPiSetupGpio();
 	
+	pinMode(GPIO_BCM_BUTTON4, INPUT);
+	pinMode(GPIO_BCM_ENCODER_A, INPUT);
+	pinMode(GPIO_BCM_ENCODER_B, INPUT);
+
+	m_flag_encoder_a = false;
+	m_flag_encoder_b = false;
+	m_flag_button4 = false;
+	m_direction_has_been_used = false;
+	m_encoder_direction = 0;
+	
+
+	std::thread(&HW_Con::encoder_handling,this, std::ref(m_encoder_direction), std::ref(m_direction_has_been_used)).detach();
+
+}
+
+int HW_Con::getEncoderDirection()
+{
+	int value = m_encoder_direction;
+	m_encoder_direction = 0;
+	m_direction_has_been_used = true;
+	return value;
+}
+
+void HW_Con::encoder_handling(int& r_m_encoder_direction, bool& r_m_direction_has_been_used)
+{
+	int value = 0;
+	while (true)
+	{
+		if(r_m_direction_has_been_used)
+
+		if (!digitalRead(GPIO_BCM_ENCODER_A) && m_flag_encoder_a == false)
+		{
+			m_flag_encoder_a = true;
+			
+		}
+		if (m_flag_encoder_a == true && m_flag_encoder_b == false)
+		{
+			m_encoder_b = digitalRead(GPIO_BCM_ENCODER_B);
+			m_flag_encoder_b = true;
+		}
+
+		if (digitalRead(GPIO_BCM_ENCODER_A) && m_flag_encoder_a == true && digitalRead(GPIO_BCM_ENCODER_B) && m_flag_encoder_b == true)
+		{
+			if (m_encoder_b)
+			{
+				r_m_encoder_direction = 1;
+				//std::cout << "Direction = +" << std::endl;
+			}
+			if (!m_encoder_b)
+			{
+				r_m_encoder_direction = -1;
+				//std::cout << "Direction = -" << std::endl;
+			}
+
+			m_flag_encoder_a = false;
+			m_flag_encoder_b = false;
+			r_m_direction_has_been_used = false;
+			std::this_thread::sleep_for(std::chrono::milliseconds(100));
+		}
 
 
+
+		
+	}
 }
 
 void HW_Con::loadDigitalInputAdresses(std::string path)
@@ -520,10 +582,22 @@ bool HW_Con::getDigitalGPIOState(int pin)
 	}
 }
 
-void HW_Con::setUpDigitalGPIOPinINPUT(int pin)
+bool HW_Con::getButton4Press()
 {
-	pinMode(pin, INPUT);
+	if (digitalRead(8) && m_flag_button4 == false)
+	{
+		m_flag_button4 = true;
+	}
+	if (!digitalRead(8) && m_flag_button4 == true)
+	{
+		m_flag_button4 = false;
+		return true;
+	}
+
+	return false;
 }
+
+
 
 
 

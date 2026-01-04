@@ -1,8 +1,13 @@
 #ifndef HW_CON.h
 #define HW_CON.h
 
+#define GPIO_BCM_BUTTON4	8
+#define GPIO_BCM_ENCODER_A	7
+#define GPIO_BCM_ENCODER_B	1
+
 #include <map>
 #include <bitset>
+#include <thread>
 
 #include "wiringPi.h"
 #include "wiringPiI2C.h"
@@ -20,6 +25,7 @@ public:
 	void loadDigitalOutputAdresses(std::string path);
 	void loadIOMapConfig(std::string path);
 
+	//I2C functions
 
 	//@brief Set all relays outputs to inactive
 	//@brief When the PCF8574 start up, the ports are closed to GND. The pull-up resistors activate the relays
@@ -55,20 +61,38 @@ public:
 	//@return Returns true if the port is closed (Relay is active), false if the port is open to GND (Relay is not active)
 	bool getDigitalOutputState(std::string name);
 
-
+	//@brief Reads the states of the PCF8574 that are connected to input pins. Call this function once per frame
 	void refreshDigitalInputStates();
+	//!I2C functions
+
+	//Directly connected functions
+	
 
 	bool getDigitalGPIOState(int pin);//Use BCM Pin name
+	
+	bool getButton4Press();
 
+	int getEncoderDirection();
 
-	void setUpDigitalGPIOPinINPUT(int pin);//Use BCM Pin name
+	//!Directly connected functions
 
 private:
 
+
+	
+	int m_encoder_direction;
+	bool m_direction_has_been_used;
+	bool m_encoder_b;
+
+	void encoder_handling(int& returnValue, bool& value_has_been_used);
+
+	bool m_flag_encoder_a;
+	bool m_flag_encoder_b;
+	bool m_flag_button4;
+
 	std::mutex m_mutex;
-
 	Log* m_p_logger;
-
+	
 
 	//wiringPi I2C adresses
 	uint16_t m_PCF_IO_32;//Digital_Input 0-7

@@ -1,5 +1,6 @@
 #include <iostream>
 #include <chrono>
+#include <thread>
 
 
 #include "Log.h"
@@ -117,7 +118,7 @@ int main()
 		
 		
 
-		if (total_time_last_frame.count() > 1000/target_fps)
+		if (total_time_last_frame.count() > static_cast<float>(1000) /target_fps)
 		{	
 
 			if (!hw->getDigitalInputState("D_In_1"))
@@ -129,8 +130,16 @@ int main()
 				hw->setDigitalOutputState(false, "D_Out_0");
 			}
 
-			std::cout << "digital Pin 8: " << hw->getDigitalGPIOState(8) << std::endl;
-			std::cout << "digital Pin 24: " << hw->getDigitalGPIOState(24) << std::endl;
+			if (hw->getButton4Press())
+			{
+				system_diagram.switchCursorState();
+			}
+
+			system_diagram.moveCursor(hw->getEncoderDirection());
+
+			/*std::cout << "Button4: " << hw->getDigitalGPIOState(GPIO_BCM_BUTTON4) << std::endl;
+			std::cout << "EncoderA: " << hw->getDigitalGPIOState(GPIO_BCM_ENCODER_A) << std::endl;
+			std::cout << "EncoderB: " << hw->getDigitalGPIOState(GPIO_BCM_ENCODER_B) << std::endl;*/
 
 			//Get system time
 			time = now;
@@ -142,15 +151,15 @@ int main()
 			renderer.clearRender();
 			//m_p_renderer->prepareRender();
 
+
+			
+
 			system_diagram.drawBackGroundColor(225,225,225);
 			system_diagram.drawPreloadedTexture(0, 0, 800, 480, "Schema");
 
-			//Draw a red rectangle behind the currently selected object
-			//system_diagram.drawCursor();
-
 			system_diagram.drawPreloadedTextureXYWH("Pumpe1_Aktiv", rotation, "Circular_Arrow");
 			system_diagram.drawPreloadedTextureXYWH("Pumpe2_Aktiv", rotation, "Circular_Arrow");
-			system_diagram.drawPreloadedTextureXYWH("Mischer_Schnecke_Aktiv", rotation, "HALT_Symbol");
+			system_diagram.drawPreloadedTextureXYWH("Mischer_Schnecke_Aktiv", rotation, "Circular_Arrow");
 			system_diagram.drawPreloadedTextureXYWH("Schieber_Schweineguelle_Status", hw->getDoubleInputState("D_In_0", "D_In_1"));
 			system_diagram.drawPreloadedTextureXYWH("Schieber_Mischer_Status", 270, "Schieber_Geschlossen");
 			system_diagram.drawPreloadedTextureXYWH("Schieber_Probenahme_Status", "Schieber_Geschlossen");
@@ -168,6 +177,7 @@ int main()
 			system_diagram.drawText_l(231, 9, "FPS: " + std::to_string(target_fps), "ARIAL_Black");
 			system_diagram.drawText_r(473, 9, "Time(ms)/frame: " + std::to_string((int)total_time_last_frame.count()), "ARIAL_Black");
 
+			system_diagram.drawCursor();
 
 			renderer.Show();
 

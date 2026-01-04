@@ -23,6 +23,10 @@ GUI::GUI(Log* logger, Render* renderer)
 	m_background_rect.w = m_p_render_instance->getDisplaySize().w;
 	m_background_rect.h = m_p_render_instance->getDisplaySize().h;
 
+	m_currently_selected_object_for_cursor = 0;
+	m_ammount_selectable_objects = 0;
+	m_cursor_active = false;
+
 }
 
 
@@ -35,21 +39,11 @@ void GUI::drawBackGroundColor(int r, int g, int b)
 	SDL_RenderFillRect(m_p_render_instance->getRenderer(), &m_background_rect);
 }
 
-void GUI::drawObject( int x_pos, int y_pos, int height, int width, std::string path)
-{
-
-}
-
-void GUI::drawObject(int x_pos, int y_pos, int height, int width, int r, int g, int b)
-{
-
-}
-
 
 
 void GUI::drawPreloadedTexture(int x_pos, int y_pos, int height, int width, std::string name)
 {
-	SDL_Rect draw_rect;
+	SDL_Rect draw_rect{ 0 };
 	draw_rect.x = x_pos;
 	draw_rect.y = y_pos;
 	draw_rect.h = height;
@@ -108,22 +102,56 @@ void GUI::drawPreloadedTextureXYWH(std::string object_name, int state)
 
 void GUI::drawCursor()
 {
-	for (auto const& i : m_loaded_elements_pos)
+	if (m_cursor_active)
 	{
-		if (i.second.selectable == true)
+		for (auto const& i : m_loaded_elements_pos)
 		{
-			SDL_Rect cursor_rect;
-			cursor_rect.x = i.second.xpos -1;
-			cursor_rect.y = i.second.ypos -1;
-			cursor_rect.w = i.second.width +2;
-			cursor_rect.h = i.second.height +2;
+			if (i.second.nmbr_selectable_object == m_currently_selected_object_for_cursor)
+			{
+				SDL_Rect cursor_rect;
+				cursor_rect.x = i.second.xpos - 1;
+				cursor_rect.y = i.second.ypos - 1;
+				cursor_rect.w = i.second.width + 2;
+				cursor_rect.h = i.second.height + 2;
 
-			SDL_SetRenderDrawColor(m_p_render_instance->getRenderer(), 255, 0, 0, 255);
-			SDL_RenderFillRect(m_p_render_instance->getRenderer(), &cursor_rect);
-			SDL_RenderDrawRect(m_p_render_instance->getRenderer(),&cursor_rect);
+				SDL_SetRenderDrawColor(m_p_render_instance->getRenderer(), 255, 0, 0, 150);
+				SDL_RenderFillRect(m_p_render_instance->getRenderer(), &cursor_rect);
+				SDL_RenderDrawRect(m_p_render_instance->getRenderer(), &cursor_rect);
 
+				//std::cout << "Draw cursor on object nmbr: " << m_currently_selected_object_for_cursor << std::endl;
+
+			}
 		}
 	}
+
+	
+}
+
+void GUI::switchCursorState()
+{
+	m_cursor_active = !m_cursor_active;
+}
+
+void GUI::moveCursor(int direction)
+{
+	if(direction)
+	{
+		m_currently_selected_object_for_cursor += direction;
+		if (m_currently_selected_object_for_cursor < 0)
+		{
+			m_currently_selected_object_for_cursor = 0;
+		}
+		if (m_currently_selected_object_for_cursor > m_ammount_selectable_objects)
+		{
+			m_currently_selected_object_for_cursor = m_ammount_selectable_objects;
+		}
+		//std::cout << "moved cursor: " << direction << " new position: " << m_currently_selected_object_for_cursor << std::endl;
+	}
+
+	
+
+	
+	
 }
 
 
@@ -330,19 +358,41 @@ void GUI::loadXYWHPosition(std::string path)
 				m_element_pos.height = std::stoi(temp);
 				temp.clear();
 			}break;
+			case VARIANTS::SELECTABLE:
+			{
+				if (std::stoi(temp) == 1)
+				{
+					m_element_pos.nmbr_selectable_object = m_ammount_selectable_objects;
+					m_ammount_selectable_objects++;
+				}
+				else
+				{
+					m_element_pos.nmbr_selectable_object = -1;
+				}
+			}break;
 			default:
 				break;
 			}
 		}
 		if (single_character == "}")//The last number doesn't have a comma following, so it has to be read when the bracelet is found
 		{
-			m_element_pos.selectable = std::stoi(temp);
+			if (std::stoi(temp) == 1)
+			{
+				m_element_pos.nmbr_selectable_object = m_ammount_selectable_objects;
+				m_ammount_selectable_objects++;
+			}
+			else
+			{
+				m_element_pos.nmbr_selectable_object = -1;
+			}
 			temp.clear();
 			m_loaded_elements_pos.insert({ object_name, m_element_pos });
 		}
 		
 
 	}
+
+	std::cout << "Finished loading XYWH pos" << std::endl;
 }
 
 void GUI::loadTexture(std::string name, std::string path)
