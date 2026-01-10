@@ -41,7 +41,7 @@ void GUI::drawBackGroundColor(int r, int g, int b)
 
 
 
-void GUI::drawPreloadedTexture(int x_pos, int y_pos, int height, int width, std::string name)
+void GUI::drawVisualElement(int x_pos, int y_pos, int height, int width, std::string name)
 {
 	SDL_Rect draw_rect{ 0 };
 	draw_rect.x = x_pos;
@@ -54,7 +54,7 @@ void GUI::drawPreloadedTexture(int x_pos, int y_pos, int height, int width, std:
 	}
 }
 
-void GUI::drawPreloadedTexture(int x_pos, int y_pos, int height, int width, int rotation, std::string name)
+void GUI::drawVisualElement(int x_pos, int y_pos, int height, int width, int rotation, std::string name)
 {
 	SDL_Rect draw_rect;
 	draw_rect.x = x_pos;
@@ -67,34 +67,34 @@ void GUI::drawPreloadedTexture(int x_pos, int y_pos, int height, int width, int 
 	}
 }
 
-void GUI::drawPreloadedTextureXYWH(std::string object_name, std::string texture_name)
+void GUI::drawVisualElement(std::string object_name, std::string texture_name)
 {
 	
-	drawPreloadedTexture(m_loaded_elements_pos.at(object_name).xpos, m_loaded_elements_pos.at(object_name).ypos, m_loaded_elements_pos.at(object_name).width,
+	drawVisualElement(m_loaded_elements_pos.at(object_name).xpos, m_loaded_elements_pos.at(object_name).ypos, m_loaded_elements_pos.at(object_name).width,
 		m_loaded_elements_pos.at(object_name).height, texture_name);
 }
 
-void GUI::drawPreloadedTextureXYWH(std::string object_name, int rotation, std::string texture_name)
+void GUI::drawVisualElement(std::string object_name, int rotation, std::string texture_name)
 {
-	drawPreloadedTexture(m_loaded_elements_pos.at(object_name).xpos, m_loaded_elements_pos.at(object_name).ypos, m_loaded_elements_pos.at(object_name).width,
+	drawVisualElement(m_loaded_elements_pos.at(object_name).xpos, m_loaded_elements_pos.at(object_name).ypos, m_loaded_elements_pos.at(object_name).width,
 		m_loaded_elements_pos.at(object_name).height, rotation, texture_name);
 }
 
-void GUI::drawPreloadedTextureXYWH(std::string object_name, int state)
+void GUI::drawVisualElement(std::string object_name, int state)
 {
 	if (state == 0)
 	{
-		drawPreloadedTexture(m_loaded_elements_pos.at(object_name).xpos, m_loaded_elements_pos.at(object_name).ypos, m_loaded_elements_pos.at(object_name).width,
+		drawVisualElement(m_loaded_elements_pos.at(object_name).xpos, m_loaded_elements_pos.at(object_name).ypos, m_loaded_elements_pos.at(object_name).width,
 			m_loaded_elements_pos.at(object_name).height, "Schieber_Geschlossen");
 	}
 	if (state == 1)
 	{
-		drawPreloadedTexture(m_loaded_elements_pos.at(object_name).xpos, m_loaded_elements_pos.at(object_name).ypos, m_loaded_elements_pos.at(object_name).width,
+		drawVisualElement(m_loaded_elements_pos.at(object_name).xpos, m_loaded_elements_pos.at(object_name).ypos, m_loaded_elements_pos.at(object_name).width,
 			m_loaded_elements_pos.at(object_name).height, "Schieber_Offen");
 	}
 	if (state == 2)
 	{
-		drawPreloadedTexture(m_loaded_elements_pos.at(object_name).xpos, m_loaded_elements_pos.at(object_name).ypos, m_loaded_elements_pos.at(object_name).width,
+		drawVisualElement(m_loaded_elements_pos.at(object_name).xpos, m_loaded_elements_pos.at(object_name).ypos, m_loaded_elements_pos.at(object_name).width,
 			m_loaded_elements_pos.at(object_name).height, "Schieber_Unbekannt");
 	}
 
@@ -284,7 +284,7 @@ void GUI::prepareXYWHPosition(int xpos, int ypos, int width, int height, std::st
 	m_loaded_elements_pos.insert({ name, m_element_pos});
 }
 
-void GUI::loadXYWHPosition(std::string path)
+void GUI::loadVisualElementsPosition(std::string path)
 {
 	std::string temp;
 	std::string single_character;

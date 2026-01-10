@@ -26,8 +26,8 @@ public:
 	
 	void drawBackGroundColor(int r, int g, int b);
 
-	void drawPreloadedTexture(int x_pos, int y_pos, int height, int width, std::string name);
-	void drawPreloadedTexture(int x_pos, int y_pos, int height, int width, int rotation, std::string name);
+	void drawVisualElement(int x_pos, int y_pos, int height, int width, std::string name);
+	void drawVisualElement(int x_pos, int y_pos, int height, int width, int rotation, std::string name);
 
 
 	//@brief Function to draw Textures, with the position set in the file: "drawable_objects_positions.txt"
@@ -35,9 +35,9 @@ public:
 	//@param texture_name Name of the texture to draw
 	//@param rotation Rotation value of the texture in degrees
 	//@param state Use this function together with HW_CON::getDoubleInputState(), mainly for valves, that have to position sensors (one active when open, one active when closed)
-	void drawPreloadedTextureXYWH(std::string object_name,  std::string texture_name);
-	void drawPreloadedTextureXYWH(std::string object_name, int rotation, std::string texture_name);
-	void drawPreloadedTextureXYWH(std::string object_name, int state);
+	void drawVisualElement(std::string object_name,  std::string texture_name);
+	void drawVisualElement(std::string object_name, int rotation, std::string texture_name);
+	void drawVisualElement(std::string object_name, int state);
 
 
 	//@brief Function to draw the text in the backbuffer
@@ -75,12 +75,12 @@ public:
 	void prepareXYWHPosition(int xpos, int ypos, int width, int height, std::string name);
 
 
+	//@brief Function to write a position (x and y value) of an object that needs frequent texture changing into a map
 	//@brief Loads the given position and size attributes from a text file and stores them into a map
-	//@brief Basicly the same functionality as prepareXYWHPosition, except, that the positions are read from a file
 	//@brief How to write the file: #Object_Name (refer with the same in the function drawPreloadedTextureXYWH) NEWLINE { NEWLINE xposXX,yposYY,wdataWW,hdataHH NEWLINE }
 	//@brief Don't write empty spaces between the bracelets
 	//@param path Path to the file
-	void loadXYWHPosition(std::string path);
+	void loadVisualElementsPosition(std::string path);
 
 	//@brief Function to preload textures into a map
 	//@param name Key(name) to refer to the texture

@@ -79,7 +79,7 @@ int main()
 	system_diagram.loadTexture("Schieber_Offen", "/resource/schieber_offen.png");
 	system_diagram.loadTexture("Schieber_Unbekannt", "/resource/schieber_unbekannt.png");
 
-	system_diagram.loadXYWHPosition("/resource/drawable_objects_positions.txt");
+	system_diagram.loadVisualElementsPosition("/resource/drawable_objects_positions.txt");
 
 
 
