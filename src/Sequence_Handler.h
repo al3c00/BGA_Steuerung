@@ -30,9 +30,9 @@ public:
 
 	void startSequence(std::string name);
 
-	//@brief Gets the sequence as a string with "NEWLINE" for every new line
-	//@param name name of the sequence
-	std::string getSequenceFunctions(std::string name);
+	//@brief Gets the individual functions of a sequence stored in a vector
+	//@param name name of the sequence as written in the file without #
+	std::vector<std::string> getSequenceFunctions(std::string name);
 
 
 private:
@@ -49,6 +49,7 @@ private:
 	//Struct to describe one step/function in the sequences. Holds the function type as enum SEQ_FUNCTION_TYPE and 3 int parameters
 	struct Seq_Part_Info
 	{
+		std::string seq_function_name;
 		SEQ_FUNCTION_TYPE type;
 		int param_int1, param_int2;
 		std::string param_string1, param_string2;
@@ -60,7 +61,7 @@ private:
 
 	std::map<std::string, std::vector<Seq_Part_Info>>m_complete_sequence_map;//Map that holds all the loades sequences. The sequences can be addressed by their string key
 	
-	std::map<std::string, std::thread>m_running_sequences_map;//Map that holds all the running thread
+	std::map<std::string, std::thread>m_running_sequences_map;//Map that holds all the running threads
 
 
 

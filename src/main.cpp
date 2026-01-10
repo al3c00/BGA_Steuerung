@@ -208,7 +208,7 @@ int main()
 					sequence_overview.drawText_l(231, 9, "FPS: " + std::to_string(target_fps), "ARIAL_Black");
 					sequence_overview.drawText_r(473, 9, "Time(ms)/frame: " + std::to_string((int)total_time_last_frame.count()), "ARIAL_Black");
 
-					sequence_overview.drawText_r(473, 40, sqh.getSequenceFunctions("hallo"),  "ARIAL_Black");
+					sequence_overview.drawList_l(0, 40, 15, sqh.getSequenceFunctions("Sequence1"), "ARIAL_Black");
 				}
 
 			renderer.Show();

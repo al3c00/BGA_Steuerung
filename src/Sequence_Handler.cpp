@@ -157,14 +157,14 @@ void Sequence_Handler::loadSeq(std::string path)
 		{
 			if (temp == "WAIT")
 			{
-				m_complete_sequence.push_back({ SEQ_FUNCTION_TYPE::NOT_DEFINED, 0, 0, "", "" });
+				m_complete_sequence.push_back({"WAIT",  SEQ_FUNCTION_TYPE::NOT_DEFINED, 0, 0, "", ""});
 				m_complete_sequence.at(sequence_step).type = SEQ_FUNCTION_TYPE::WAIT;
 				seq_step_awaits_string_params = false;
 				temp.clear();
 			}
 			else if (temp == "PROGRESS_IF_1")
 			{
-				m_complete_sequence.push_back({ SEQ_FUNCTION_TYPE::NOT_DEFINED, 0, 0, "", "" });
+				m_complete_sequence.push_back({"PROGRESS_IF_1", SEQ_FUNCTION_TYPE::NOT_DEFINED, 0, 0, "", ""});
 				m_complete_sequence.at(sequence_step).type = SEQ_FUNCTION_TYPE::PROGRESS_IF_1;
 				seq_step_awaits_string_params = false;
 				seq_step_awaits_both_params = true;
@@ -172,28 +172,28 @@ void Sequence_Handler::loadSeq(std::string path)
 			}
 			else if (temp == "GET_DIGITAL_INPUT")
 			{
-				m_complete_sequence.push_back({ SEQ_FUNCTION_TYPE::NOT_DEFINED, 0, 0, "", "" });
+				m_complete_sequence.push_back({ "PROGRESS_IF_2", SEQ_FUNCTION_TYPE::NOT_DEFINED, 0, 0, "", "" });
 				m_complete_sequence.at(sequence_step).type = SEQ_FUNCTION_TYPE::GET_DIGITAL_INPUT;
 				seq_step_awaits_string_params = true;
 				temp.clear();
 			}
 			else if (temp == "GET_DOUBLE_DIGITAL_INPUT")
 			{
-				m_complete_sequence.push_back({ SEQ_FUNCTION_TYPE::NOT_DEFINED, 0, 0, "", "" });
+				m_complete_sequence.push_back({ "GET_DOUBLE_DIGITAL_INPUT", SEQ_FUNCTION_TYPE::NOT_DEFINED, 0, 0, "", "" });
 				m_complete_sequence.at(sequence_step).type = SEQ_FUNCTION_TYPE::GET_DOUBLE_DIGITAL_INPUT;
 				seq_step_awaits_string_params = true;
 				temp.clear();
 			}
 			else if (temp == "SWITCH_DIGITAL_OUTPUT")
 			{
-				m_complete_sequence.push_back({ SEQ_FUNCTION_TYPE::NOT_DEFINED, 0, 0, "", "" });
+				m_complete_sequence.push_back({"SWITCH_DIGITAL_OUTPUT", SEQ_FUNCTION_TYPE::NOT_DEFINED, 0, 0, "", ""});
 				m_complete_sequence.at(sequence_step).type = SEQ_FUNCTION_TYPE::SWITCH_DIGITAL_OUTPUT;
 				seq_step_awaits_string_params = true;
 				temp.clear();
 			}
 			else if (temp == "SET_DIGITAL_OUTPUT")
 			{
-				m_complete_sequence.push_back({ SEQ_FUNCTION_TYPE::NOT_DEFINED, 0, 0, "", "" });
+				m_complete_sequence.push_back({"SET_DIGITAL_OUTPUT", SEQ_FUNCTION_TYPE::NOT_DEFINED, 0, 0, "", ""});
 				m_complete_sequence.at(sequence_step).type = SEQ_FUNCTION_TYPE::SET_DIGITAL_OUTPUT;
 				seq_step_awaits_string_params = true;
 				temp.clear();
@@ -298,17 +298,17 @@ void Sequence_Handler::startSequence(std::string name)
 	m_running_sequences_map.insert({ name, std::thread(&Sequence_Handler::m_playSequence, this, name) });
 }
 
-std::string Sequence_Handler::getSequenceFunctions(std::string name)
+std::vector<std::string> Sequence_Handler::getSequenceFunctions(std::string name)
 {
-	std::string names;
+	std::vector<std::string> seq_functions;
 	
-	for (auto const& i : m_running_sequences_map)
+	for (int i = 0; i < m_complete_sequence_map.at(name).size(); i++)
 	{
-		names.append(i.first);
-		names.append("       ");
+		seq_functions.push_back(m_complete_sequence_map.at(name).at(i).seq_function_name);
 	}
 
-	return names;
+	return seq_functions;
+
 }
 
 void Sequence_Handler::m_playSequence(std::string name)
