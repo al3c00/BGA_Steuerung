@@ -106,7 +106,7 @@ int main()
 	//	show things
 	//}
 
-	gui_state = GUI_STATE::SYSTEM_DIAGRAM;
+	gui_state = GUI_STATE::SEQUENCE_OVERVIEW;
 	
 	int rotation = 0;
 	do
@@ -176,18 +176,18 @@ int main()
 
 
 				system_diagram.drawBackGroundColor(225, 225, 225);
-				system_diagram.drawPreloadedTexture(0, 0, 800, 480, "Schema");
+				system_diagram.drawVisualElement(0, 0, 800, 480, "Schema");
 
-				system_diagram.drawPreloadedTextureXYWH("Pumpe1_Aktiv", rotation, "Circular_Arrow");
-				system_diagram.drawPreloadedTextureXYWH("Pumpe2_Aktiv", rotation, "Circular_Arrow");
-				system_diagram.drawPreloadedTextureXYWH("Mischer_Schnecke_Aktiv", rotation, "Circular_Arrow");
-				system_diagram.drawPreloadedTextureXYWH("Schieber_Schweineguelle_Status", hw->getDoubleInputState("D_In_0", "D_In_1"));
-				system_diagram.drawPreloadedTextureXYWH("Schieber_Mischer_Status", 270, "Schieber_Geschlossen");
-				system_diagram.drawPreloadedTextureXYWH("Schieber_Probenahme_Status", "Schieber_Geschlossen");
-				system_diagram.drawPreloadedTextureXYWH("Schieber_GF_Status", "Schieber_Geschlossen");
-				system_diagram.drawPreloadedTextureXYWH("Schieber_GSD_Status", "Schieber_Geschlossen");
-				system_diagram.drawPreloadedTextureXYWH("Schieber_Fassbefuellung_Status", "Schieber_Geschlossen");
-				system_diagram.drawPreloadedTextureXYWH("Schieber_Rueckfuehrung_Status", "Schieber_Offen");
+				system_diagram.drawVisualElement("Pumpe1_Aktiv", rotation, "Circular_Arrow");
+				system_diagram.drawVisualElement("Pumpe2_Aktiv", rotation, "Circular_Arrow");
+				system_diagram.drawVisualElement("Mischer_Schnecke_Aktiv", rotation, "Circular_Arrow");
+				system_diagram.drawVisualElement("Schieber_Schweineguelle_Status", hw->getDoubleInputState("D_In_0", "D_In_1"));
+				system_diagram.drawVisualElement("Schieber_Mischer_Status", 270, "Schieber_Geschlossen");
+				system_diagram.drawVisualElement("Schieber_Probenahme_Status", "Schieber_Geschlossen");
+				system_diagram.drawVisualElement("Schieber_GF_Status", "Schieber_Geschlossen");
+				system_diagram.drawVisualElement("Schieber_GSD_Status", "Schieber_Geschlossen");
+				system_diagram.drawVisualElement("Schieber_Fassbefuellung_Status", "Schieber_Geschlossen");
+				system_diagram.drawVisualElement("Schieber_Rueckfuehrung_Status", "Schieber_Offen");
 
 				//system_diagram.drawPreloadedTexture(80, 186, 15, 15, rotation, "Arrow_Active");
 				//system_diagram.drawText_l(50, 200, "Hello World", "ARIAL_Black");
@@ -204,11 +204,14 @@ int main()
 
 				else if (gui_state == GUI_STATE::SEQUENCE_OVERVIEW)
 				{
+					sequence_overview.drawBackGroundColor(225, 225, 225);
+
 					sequence_overview.drawText_l(7, 9, str_current_time, "ARIAL_Black");
 					sequence_overview.drawText_l(231, 9, "FPS: " + std::to_string(target_fps), "ARIAL_Black");
 					sequence_overview.drawText_r(473, 9, "Time(ms)/frame: " + std::to_string((int)total_time_last_frame.count()), "ARIAL_Black");
 
-					sequence_overview.drawList_l(0, 40, 15, sqh.getSequenceFunctions("Sequence1"), "ARIAL_Black");
+					sequence_overview.drawList_l(10, 40, 25, sqh.getSequenceFunctions("Sequence1"), "ARIAL_Black");
+					
 				}
 
 			renderer.Show();

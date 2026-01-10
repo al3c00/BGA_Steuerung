@@ -41,6 +41,19 @@ void GUI::drawBackGroundColor(int r, int g, int b)
 
 
 
+void GUI::drawVisualElement(int x_pos, int y_pos, int height, int width, int r, int g, int b)
+{
+	SDL_Rect element_rect;
+	element_rect.x = x_pos;
+	element_rect.y = y_pos;
+	element_rect.w = width;
+	element_rect.h = height;
+
+	SDL_SetRenderDrawColor(m_p_render_instance->getRenderer(), r, g, b,225);
+	SDL_RenderFillRect(m_p_render_instance->getRenderer(), &element_rect);
+	SDL_RenderDrawRect(m_p_render_instance->getRenderer(), &element_rect);
+}
+
 void GUI::drawVisualElement(int x_pos, int y_pos, int height, int width, std::string name)
 {
 	SDL_Rect draw_rect{ 0 };
@@ -199,6 +212,62 @@ void GUI::drawText_l(int x_pos, int y_pos, std::string text, std::string font)
 
 }
 
+void GUI::drawText_l(int x_pos, int y_pos, std::string text, std::string font, int box_r, int box_g, int box_b)
+{
+	int nmbr_of_characters = text.length();
+
+	SDL_Rect rect_text;
+	SDL_Rect rect_box;
+	rect_text.x = x_pos;
+	rect_text.y = y_pos;
+
+	rect_box.x = x_pos - 2;
+	rect_box.y = y_pos - 2;
+
+	int symbol_width = 0;
+	int symbol_height = 0;
+
+	int text_length = 0;
+
+	for (int i = 0; i < nmbr_of_characters; i++)
+	{
+		char single_symbol = text.at(i);
+		//std::cout << "Single symbol: " <<single_symbol << std::endl;
+
+		if (SDL_QueryTexture(s_m_font_collection.at(font).at(single_symbol), NULL, NULL, &symbol_width, &symbol_height) < 0)
+		{
+			m_p_logger->writeLog(LogLevel::ERROR, m_log_origin + " SDL_QUERY_TEXTURE", SDL_GetError());
+		}
+
+		rect_text.w = symbol_width;
+		rect_text.h = symbol_height;
+		text_length += symbol_width;
+
+		if (SDL_RenderCopy(m_p_render_instance->getRenderer(), s_m_font_collection.at(font).at(single_symbol), NULL, &rect_text) < 0)
+		{
+			std::cout << "Error SDL_RenderCopy" << std::endl;
+			m_p_logger->writeLog(LogLevel::ERROR, m_log_origin + " DRAW-TEXT__SDL_RENDER_COPY", SDL_GetError());
+		}
+
+
+		rect_text.x += rect_text.w;
+	}
+
+		
+		
+		rect_box.w = text_length + 2;
+		rect_box.h = rect_text.h + 2;
+
+		SDL_SetRenderDrawColor(m_p_render_instance->getRenderer(), box_r, box_g, box_b, 100);
+		SDL_RenderFillRect(m_p_render_instance->getRenderer(), &rect_box);
+		SDL_RenderDrawRect(m_p_render_instance->getRenderer(), &rect_box);
+
+		//std::cout << "Draw cursor on object nmbr: " << m_currently_selected_object_for_cursor << std::endl;
+
+	
+
+}
+
 void GUI::drawText_l(int x_pos, int y_pos, int numbers, std::string font)
 {
 	drawText_l(x_pos, y_pos, std::to_string(numbers), font);
@@ -206,11 +275,14 @@ void GUI::drawText_l(int x_pos, int y_pos, int numbers, std::string font)
 
 void GUI::drawList_l(int x_pos, int y_pos, int spacing,  std::vector<std::string> text, std::string font)
 {
+
 	int vertical_text_pos = y_pos;//The y-position of the text line
 	for (int i = 0; i < text.size(); i++)
 	{
-		drawText_l(x_pos, vertical_text_pos, text.at(i), font);
+		drawText_l(x_pos, vertical_text_pos, std::to_string(i) + ") " + text.at(i), font);
+		
 		vertical_text_pos += spacing;
+		
 	}
 }
 

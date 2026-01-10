@@ -26,18 +26,21 @@ public:
 	
 	void drawBackGroundColor(int r, int g, int b);
 
-	void drawVisualElement(int x_pos, int y_pos, int height, int width, std::string name);
-	void drawVisualElement(int x_pos, int y_pos, int height, int width, int rotation, std::string name);
+
 
 
 	//@brief Function to draw Textures, with the position set in the file: "drawable_objects_positions.txt"
-	//@param object_name Name as the position data is called in the file
+	//@param r,g,b To draw a simple rectangle, give the colours that it should have
+	//@param pos_object_name Name as the position data is called in the file
 	//@param texture_name Name of the texture to draw
 	//@param rotation Rotation value of the texture in degrees
 	//@param state Use this function together with HW_CON::getDoubleInputState(), mainly for valves, that have to position sensors (one active when open, one active when closed)
-	void drawVisualElement(std::string object_name,  std::string texture_name);
-	void drawVisualElement(std::string object_name, int rotation, std::string texture_name);
-	void drawVisualElement(std::string object_name, int state);
+	void drawVisualElement(int x_pos, int y_pos, int height, int width, int r, int g, int b);
+	void drawVisualElement(int x_pos, int y_pos, int height, int width, std::string texture_name);
+	void drawVisualElement(int x_pos, int y_pos, int height, int width, int rotation, std::string texture_name);
+	void drawVisualElement(std::string pos_object_name,  std::string texture_name);
+	void drawVisualElement(std::string pos_object_name, int rotation, std::string texture_name);
+	void drawVisualElement(std::string pos_object_name, int state);
 
 
 	//@brief Function to draw the text in the backbuffer
@@ -45,7 +48,9 @@ public:
 	//@param y_pos y-Position (Top left of the text element)
 	//@param text/numbers Value, that should be displayed
 	//@param font Font-variant from collection that should be used
+	//@param box_r,box_g,box_b Color (RGB) that should surround the text
 	void drawText_l(int x_pos, int y_pos, std::string text, std::string font);
+	void drawText_l(int x_pos, int y_pos, std::string text, std::string font, int box_r, int box_g, int box_b);
 	void drawText_l(int x_pos, int y_pos, int numbers, std::string font);
 
 	//@brief Function to draw a vertical list in the backbuffer. The list components are given in a vector
