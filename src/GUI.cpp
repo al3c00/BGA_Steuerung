@@ -204,6 +204,16 @@ void GUI::drawText_l(int x_pos, int y_pos, int numbers, std::string font)
 	drawText_l(x_pos, y_pos, std::to_string(numbers), font);
 }
 
+void GUI::drawList_l(int x_pos, int y_pos, int spacing,  std::vector<std::string> text, std::string font)
+{
+	int vertical_text_pos = y_pos;//The y-position of the text line
+	for (int i = 0; i < text.size(); i++)
+	{
+		drawText_l(x_pos, vertical_text_pos, text.at(i), font);
+		vertical_text_pos += spacing;
+	}
+}
+
 void GUI::drawText_r(int x_pos, int y_pos, std::string text, std::string font)
 {
 	int nmbr_of_characters = text.length();
@@ -448,11 +458,10 @@ void GUI::loadFont(std::string name, std::string path, int r, int g, int b)
 
 void GUI::m_insertFontInMap(std::string name)
 {
-	//The first visible character in the ascii table i "!" at DEC33, the last is "~" at DEC 126
-	//DEC32 (Space) is also included '!' has ASCII Code DEC33
-	for (int i = 0; i < 95; i++)
+	//Font map including control characters (code 0-31) and printable characters (code 32-127)
+	for (int i = 0; i < 127; i++)
 	{
-		char temp = i + '!' -1;
+		char temp = i;// +'!' - 1
 		char buf[2] = { temp, '\0' };//Add nulltermination!!
 		const char* symbol_for_Render = buf;
 		//std::cout << symbol_for_Render << std::endl;
@@ -463,9 +472,9 @@ void GUI::m_insertFontInMap(std::string name)
 	}
 		
 
-	for (int i = 0; i < 95; i++)
+	for (int i = 0; i < 127; i++)
 	{
-		char temp = i + '!' -1;
+		char temp = i; // + '!' -1
 
 		//std::cout << temp << std::endl;
 

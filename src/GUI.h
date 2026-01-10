@@ -41,20 +41,30 @@ public:
 
 
 	//@brief Function to draw the text in the backbuffer
-	//@param x_pos x-Position (Bottom left of the text element)
-	//@param y_pos y-Position (Bottom left of the text element)
+	//@param x_pos x-Position (Top left of the text element)
+	//@param y_pos y-Position (Top left of the text element)
 	//@param text/numbers Value, that should be displayed
 	//@param font Font-variant from collection that should be used
 	void drawText_l(int x_pos, int y_pos, std::string text, std::string font);
 	void drawText_l(int x_pos, int y_pos, int numbers, std::string font);
 
+	//@brief Function to draw a vertical list in the backbuffer. The list components are given in a vector
+	//@param x_pos x-Position (Top left of the text element)
+	//@param y_pos y-Position (Top left of the text element)
+	//@param spacing Vertical distance beetwen the bottom of texts
+	//@param text Value that should be displayed
+	//@param font Font-variant from collection that should be used
+	void drawList_l(int x_pos, int y_pos, int spacing,  std::vector<std::string> textx, std::string font);
+
 	//@brief Function to draw the text in the backbuffer
-	//@param x_pos x-Position (Bottom right of the text element)
-	//@param y_pos y-Position (Bottom right of the text element)
+	//@param x_pos x-Position (Top right of the text element)
+	//@param y_pos y-Position (Top right of the text element)
 	//@param text/numbers Value, that should be displayed
 	//@param font Font-variant from collection that should be used
 	void drawText_r(int x_pos, int y_pos, std::string text, std::string font);
 	void drawText_r(int x_pos, int y_pos, int numbers, std::string font);
+
+	
 
 	//@brief Function to write a position (x and y value) of an object that needs frequent texture changing into a map
 	//@param xpos X-Position of the object
