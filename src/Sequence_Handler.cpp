@@ -7,103 +7,12 @@ Sequence_Handler::Sequence_Handler(Log* logger, std::shared_ptr<HW_Con> hw_con)
 
 	m_log_origin = "Sequence_Handler";
 
+	m_sequence_return_name.clear();
+	m_sequence_return_number = -1;
+	m_loaded_sequences_names.reserve(20);
+
 }
 
-//void Sequence_Handler::loadStoredSequences(std::string path)
-//{
-//		std::string temp;
-//		std::string single_character;
-//		std::string sequence_name;
-//		std::vector<std::string>function_arguments;
-//		std::vector<std::string>function_list;
-//
-//		
-//
-//		function_list.reserve(10);
-//
-//		
-//
-//		std::ifstream file(m_getProjectDirPath() + path);
-//		file.seekg(0, file.end);
-//		int length = file.tellg();
-//		file.seekg(0, file.beg);
-//
-//		char* buffer = new char[length];
-//
-//		m_p_logger->writeLog(LogLevel::INFO, m_log_origin + " LOAD_STORED_SEQUENCES", "Reading: " + std::to_string(length) + " characters");
-//
-//		file.read(buffer, length);
-//
-//		file.close();
-//
-//		//Unsafe, file could be corrupted!!
-//		for (int i = 0; i < length; i++)
-//		{
-//			single_character = buffer[i];
-//
-//			//Check if a function name has been read. If yes clear string and prepare to read and store function arguments
-//
-//			if (temp == "WAIT")
-//			{
-//				
-//				function_list.push_back("WAIT");
-//				temp.clear();
-//			}
-//
-//			if (temp == "GET_DI")
-//			{
-//				
-//				function_list.push_back("GET_DI");
-//				temp.clear();
-//			}
-//
-//			if (temp == "GET_DOUBLE_DI")
-//			{
-//				
-//				function_list.push_back("GET_DOUBLE_DI");
-//				temp.clear();
-//			}
-//
-//			if (temp == "SWITCH_DO")
-//			{
-//				
-//				function_list.push_back("SWITCH_DO");
-//				temp.clear();
-//			}
-//
-//			if (temp == "SET_DO")
-//			{
-//				
-//				function_list.push_back("SET_DO");
-//				temp.clear();
-//			}
-//
-//
-//			if (single_character != "#" && single_character != "{" && single_character != "}" && single_character != "," && single_character != "-" && single_character != "\n" && single_character != "\r")
-//			{
-//				temp.append(single_character);
-//			}
-//
-//			//The line from one function ends with "-", if there are two arguments for one functions, they are seperated with ","
-//			if (single_character == "," || single_character == "-")
-//			{
-//				function_arguments.push_back(temp);
-//				temp.clear();
-//			}
-//
-//			if (single_character == "}")//The last number doesn't have a comma following, so it has to be read when the bracelet is found
-//			{
-//				for (int i = 0; i < function_list.size(); i++)
-//				{
-//					m_complete_sequences.push_back({function_list.at(i),function_arguments.at(i) });
-//				}
-//				temp.clear();
-//			}
-//		}
-//
-//
-//
-//}
 
 void Sequence_Handler::loadSeq(std::string path)
 {
@@ -150,6 +59,7 @@ void Sequence_Handler::loadSeq(std::string path)
 		if (single_character == "{")
 		{
 			sequence_name = temp;
+			m_loaded_sequences_names.push_back(temp);
 			temp.clear();
 		}
 
@@ -300,15 +210,57 @@ void Sequence_Handler::startSequence(std::string name)
 
 std::vector<std::string> Sequence_Handler::getSequenceFunctions(std::string name)
 {
-	std::vector<std::string> seq_functions;
-	
-	for (int i = 0; i < m_complete_sequence_map.at(name).size(); i++)
+	if (name != m_sequence_return_name)
 	{
-		seq_functions.push_back(m_complete_sequence_map.at(name).at(i).seq_function_name);
+		m_sequence_return_vector.clear();
+
+		m_sequence_return_name = name;
+
+		for (int i = 0; i < m_complete_sequence_map.at(name).size(); i++)
+		{
+			m_sequence_return_vector.push_back(m_complete_sequence_map.at(name).at(i).seq_function_name);
+		}
+	}
+	return m_sequence_return_vector;
+}
+
+std::vector<std::string> Sequence_Handler::getSequenceFunctions(int number)
+{
+	if (number > m_loaded_sequences_names.size() -1)
+	{
+		number = m_loaded_sequences_names.size() - 1;
+	}
+	if (number != m_sequence_return_number)
+	{
+		m_sequence_return_vector.clear();
+
+		m_sequence_return_number = number;
+
+		for (int i = 0; i < m_complete_sequence_map.at(m_loaded_sequences_names.at(number)).size(); i++)
+		{
+			m_sequence_return_vector.push_back(m_complete_sequence_map.at(m_loaded_sequences_names.at(number)).at(i).seq_function_name);
+		}
+
 	}
 
-	return seq_functions;
+	return m_sequence_return_vector;
+	
 
+
+}
+
+std::string Sequence_Handler::getSequenceName(int number)
+{
+	if (number > m_loaded_sequences_names.size() - 1)
+	{
+		number = m_loaded_sequences_names.size() - 1;
+	}
+	return m_loaded_sequences_names.at(number);
+}
+
+int Sequence_Handler::getAmmountOfLoadedSequences()
+{
+	return m_loaded_sequences_names.size();
 }
 
 void Sequence_Handler::m_playSequence(std::string name)

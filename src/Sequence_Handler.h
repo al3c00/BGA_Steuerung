@@ -12,8 +12,9 @@
 #include "HW_Con.h"
 
 //@brief Class to create, save, load and use sequences
-//The sequences are saved in to a .txt-file. The file containes the function names and the according parameters
-//The functions are created as member functions of this class and stored with theyr function pointer in to a map with the name (std::string) as the key
+//The sequences are saved in to a .txt-file. Each sequence consists of multiple functions. Those functions are predefined in the enum SEQ_FUNCTION_TYPE
+//Each sequence is stored as a vector. Every sequence-step is written in to the struct Seq_Part_Info
+//For easier access, the sequence-vectors are itself stored in the map "m_complete_sequence_map" and can be accessed by their name (without the #) as the key
 class Sequence_Handler 
 {
 
@@ -32,7 +33,15 @@ public:
 
 	//@brief Gets the individual functions of a sequence stored in a vector
 	//@param name name of the sequence as written in the file without #
+	//@param number Gets the sequence stored in NUMBER pos in map..use to switch through all the sequences without using their names
 	std::vector<std::string> getSequenceFunctions(std::string name);
+	std::vector<std::string> getSequenceFunctions(int number);
+
+	//@brief Use together with getSequenceFunctions(int number)
+	std::string getSequenceName(int number);
+	
+	//@brief Gets the ammount of loaded sequences
+	int getAmmountOfLoadedSequences();
 
 
 private:
@@ -59,7 +68,14 @@ private:
 	//All vectors are copied into a map, where they can be addressed by a string-key
 	std::vector<Seq_Part_Info>m_complete_sequence;
 
-	std::map<std::string, std::vector<Seq_Part_Info>>m_complete_sequence_map;//Map that holds all the loades sequences. The sequences can be addressed by their string key
+	std::vector<std::string> m_loaded_sequences_names;//Used mainly to iterate throug the map "m_complete_sequence_map" while getting the functions as a list in getSequenceFunctions
+	std::map<std::string, std::vector<Seq_Part_Info>>m_complete_sequence_map;//Map that holds all the loades sequences. The sequences can be addressed by their string key (name)
+
+	//To not having to reconstruct the vector every frame, just do it when the functions of a new sequence are asked
+	std::vector<std::string> m_sequence_return_vector;
+	std::string m_sequence_return_name;
+
+	int m_sequence_return_number;
 	
 	std::map<std::string, std::thread>m_running_sequences_map;//Map that holds all the running threads
 
