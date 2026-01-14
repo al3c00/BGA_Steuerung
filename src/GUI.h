@@ -25,11 +25,11 @@ public:
 
 	
 	void drawBackGroundColor(int r, int g, int b);
-
-
+	
 
 
 	//@brief Function to draw Textures, with the position set in the file: "drawable_objects_positions.txt"
+	//@param x_pos,y_pos Bottom left position of the element on the screen --> 0,0 is the top left corner
 	//@param r,g,b To draw a simple rectangle, give the colours that it should have
 	//@param pos_object_name Name as the position data is called in the file
 	//@param texture_name Name of the texture to draw
@@ -56,19 +56,23 @@ public:
 	//@brief Function to draw a vertical list in the backbuffer. The list components are given in a vector
 	//@param x_pos x-Position (Top left of the text element)
 	//@param y_pos y-Position (Top left of the text element)
+	//@param height,width if the occupied space of text should not exceed a specific area, use those values
+	//2param scrollpos if the text doesn't fit in the predefined space, scroll it with this value
 	//@param spacing Vertical distance beetwen the bottom of texts
 	//@param text Value that should be displayed
 	//@param font Font-variant from collection that should be used
-	void drawList_l(int x_pos, int y_pos, int spacing,  std::vector<std::string> textx, std::string font);
+	void drawList_l(int x_pos, int y_pos, int spacing,  std::vector<std::string> text, std::string font);
+	void drawList_l(int x_pos, int y_pos, int spacing, int height, int width, int scrollpos, std::vector<std::string> text, std::string font);
 
 	//@brief Function to draw the text in the backbuffer
 	//@param x_pos x-Position (Top right of the text element)
 	//@param y_pos y-Position (Top right of the text element)
 	//@param text/numbers Value, that should be displayed
 	//@param font Font-variant from collection that should be used
+	//@param box_r,box_g,box_b Color (RGB) that should surround the text
 	void drawText_r(int x_pos, int y_pos, std::string text, std::string font);
 	void drawText_r(int x_pos, int y_pos, int numbers, std::string font);
-
+	void drawText_r(int x_pos, int y_pos, std::string text, std::string font, int box_r, int box_g, int box_b);
 	
 
 	//@brief Function to write a position (x and y value) of an object that needs frequent texture changing into a map

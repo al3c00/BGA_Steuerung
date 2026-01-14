@@ -97,7 +97,7 @@ int main()
 	std::string str_current_time;
 
 
-
+	int asked_sequence = 0;
 
 	//Main loop
 	//{
@@ -136,7 +136,7 @@ int main()
 				hw->setDigitalOutputState(false, "D_Out_0");
 			}
 
-			if (hw->getButton4Press())
+			if (hw->getButton2Press())
 			{
 				if (gui_state == GUI_STATE::SYSTEM_DIAGRAM)
 				{
@@ -146,7 +146,26 @@ int main()
 				else if (gui_state == GUI_STATE::SEQUENCE_OVERVIEW)
 				{
 					gui_state = GUI_STATE::SYSTEM_DIAGRAM;
+					system_diagram.setCursorState(true);
 				}
+			}
+
+			if (hw->getButton4Press())
+			{
+				asked_sequence++;
+			}
+			if (hw->getButton3Press())
+			{
+				asked_sequence--;
+			}
+
+			if (asked_sequence < 0)
+			{
+				asked_sequence = 0;
+			}
+			else if(asked_sequence > sqh.getAmmountOfLoadedSequences() -1)
+			{
+				asked_sequence = sqh.getAmmountOfLoadedSequences() -1;
 			}
 
 			/*std::cout << "Button4: " << hw->getDigitalGPIOState(GPIO_BCM_BUTTON4) << std::endl;
@@ -174,9 +193,16 @@ int main()
 
 				system_diagram.moveCursor(hw->getEncoderDirection());
 
-
+				
 				system_diagram.drawBackGroundColor(225, 225, 225);
 				system_diagram.drawVisualElement(0, 0, 800, 480, "Schema");
+
+				//Info Elements: Time and date, FPS, ms/frame
+				system_diagram.drawVisualElement(0, 0, 30, 480, 245, 245, 245);
+				system_diagram.drawText_l(231, 9, "FPS: " + std::to_string(target_fps), "ARIAL_Black");
+				system_diagram.drawText_r(473, 9, "Time(ms)/frame: " + std::to_string((int)total_time_last_frame.count()), "ARIAL_Black");
+				system_diagram.drawText_l(7, 9, str_current_time, "ARIAL_Black");
+				
 
 				system_diagram.drawVisualElement("Pumpe1_Aktiv", rotation, "Circular_Arrow");
 				system_diagram.drawVisualElement("Pumpe2_Aktiv", rotation, "Circular_Arrow");
@@ -194,9 +220,8 @@ int main()
 				//system_diagram.drawText_l(80, 400, "Hello World", "ARIAL_Black");
 				system_diagram.drawText_l(349, 112, std::to_string(4850) + "kg", "ARIAL_Black");
 				system_diagram.drawText_l(349, 130, std::to_string(75) + "%", "ARIAL_Black");
-				system_diagram.drawText_l(7, 9, str_current_time, "ARIAL_Black");
-				system_diagram.drawText_l(231, 9, "FPS: " + std::to_string(target_fps), "ARIAL_Black");
-				system_diagram.drawText_r(473, 9, "Time(ms)/frame: " + std::to_string((int)total_time_last_frame.count()), "ARIAL_Black");
+				
+				
 
 				system_diagram.drawCursor();
 
@@ -204,13 +229,22 @@ int main()
 
 				else if (gui_state == GUI_STATE::SEQUENCE_OVERVIEW)
 				{
+
 					sequence_overview.drawBackGroundColor(225, 225, 225);
 
-					sequence_overview.drawText_l(7, 9, str_current_time, "ARIAL_Black");
+					//Info Elements: Time and date, FPS, ms/frame
+					sequence_overview.drawVisualElement(0, 0, 30, 480, 245, 245, 245);
 					sequence_overview.drawText_l(231, 9, "FPS: " + std::to_string(target_fps), "ARIAL_Black");
 					sequence_overview.drawText_r(473, 9, "Time(ms)/frame: " + std::to_string((int)total_time_last_frame.count()), "ARIAL_Black");
+					sequence_overview.drawText_l(7, 9, str_current_time, "ARIAL_Black");
 
-					sequence_overview.drawList_l(10, 40, 25, sqh.getSequenceFunctions("Sequence1"), "ARIAL_Black");
+					//Sequenzname
+					sequence_overview.drawText_l(10, 40, "Sequenz: " + sqh.getSequenceName(asked_sequence), "ARIAL_Black");
+					//Sequenznummer
+					sequence_overview.drawText_r(473, 40, std::to_string(asked_sequence + 1) + " / " + std::to_string(sqh.getAmmountOfLoadedSequences()), "ARIAL_Black", 140, 140, 140);
+
+
+					sequence_overview.drawList_l(10, 55, 25, 300, 300, 0, sqh.getSequenceFunctions(asked_sequence), "ARIAL_Black");
 					
 				}
 

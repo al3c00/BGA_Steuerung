@@ -275,15 +275,121 @@ void GUI::drawText_l(int x_pos, int y_pos, int numbers, std::string font)
 
 void GUI::drawList_l(int x_pos, int y_pos, int spacing,  std::vector<std::string> text, std::string font)
 {
-
+	//The text that should be displayed on one line
+	std::string line_text;
+	
 	int vertical_text_pos = y_pos;//The y-position of the text line
+	
 	for (int i = 0; i < text.size(); i++)
 	{
-		drawText_l(x_pos, vertical_text_pos, std::to_string(i) + ") " + text.at(i), font);
+		line_text.clear();
+		line_text = std::to_string(i) + ")" + text.at(i);
+
+		int nmbr_of_characters = line_text.length();
+
+		SDL_Rect rect_text;
+		rect_text.x = x_pos;
+		rect_text.y = vertical_text_pos;
+
+		int symbol_width = 0;
+		int symbol_height = 0;
+
+		for (int i = 0; i < nmbr_of_characters; i++)
+		{
+			char single_symbol = line_text.at(i);
+			//std::cout << "Single symbol: " <<single_symbol << std::endl;
+
+			if (SDL_QueryTexture(s_m_font_collection.at(font).at(single_symbol), NULL, NULL, &symbol_width, &symbol_height) < 0)
+			{
+				m_p_logger->writeLog(LogLevel::ERROR, m_log_origin + " SDL_QUERY_TEXTURE", SDL_GetError());
+			}
+
+			rect_text.w = symbol_width;
+			rect_text.h = symbol_height;
+
+			if (SDL_RenderCopy(m_p_render_instance->getRenderer(), s_m_font_collection.at(font).at(single_symbol), NULL, &rect_text) < 0)
+			{
+				std::cout << "Error SDL_RenderCopy" << std::endl;
+				m_p_logger->writeLog(LogLevel::ERROR, m_log_origin + " DRAW-TEXT__SDL_RENDER_COPY", SDL_GetError());
+			}
+
+
+			rect_text.x += rect_text.w;
+		}
 		
 		vertical_text_pos += spacing;
 		
 	}
+}
+
+void GUI::drawList_l(int x_pos, int y_pos, int spacing, int height, int width, int scrollpos,  std::vector<std::string> text, std::string font)
+{
+	//The text that should be displayed on one line
+	std::string line_text;
+
+	int vertical_text_pos = y_pos;//The y-position of the text line
+
+	SDL_Rect rect_box;
+	rect_box.x = x_pos;
+	rect_box.y = y_pos;
+	rect_box.w = width;
+	rect_box.h = height;
+
+	for (int i = 0; i < text.size(); i++)
+	{
+		line_text.clear();
+		line_text = std::to_string(i) + ")" + text.at(i);
+
+		int nmbr_of_characters = line_text.length();
+
+		SDL_Rect rect_text;
+		
+		rect_text.x = x_pos;
+		rect_text.y = vertical_text_pos;
+
+		int symbol_width = 0;
+		int symbol_height = 0;
+
+		for (int i = 0; i < nmbr_of_characters; i++)
+		{
+			char single_symbol = line_text.at(i);
+			//std::cout << "Single symbol: " <<single_symbol << std::endl;
+
+			if (SDL_QueryTexture(s_m_font_collection.at(font).at(single_symbol), NULL, NULL, &symbol_width, &symbol_height) < 0)
+			{
+				m_p_logger->writeLog(LogLevel::ERROR, m_log_origin + " SDL_QUERY_TEXTURE", SDL_GetError());
+			}
+
+			rect_text.w = symbol_width;
+			rect_text.h = symbol_height;
+
+			if (SDL_RenderCopy(m_p_render_instance->getRenderer(), s_m_font_collection.at(font).at(single_symbol), NULL, &rect_text) < 0)
+			{
+				std::cout << "Error SDL_RenderCopy" << std::endl;
+				m_p_logger->writeLog(LogLevel::ERROR, m_log_origin + " DRAW-TEXT__SDL_RENDER_COPY", SDL_GetError());
+			}
+
+
+			rect_text.x += rect_text.w;
+		}
+
+		vertical_text_pos += spacing;
+		if (vertical_text_pos > x_pos + height)
+		{
+			drawVisualElement(x_pos + width - 5, y_pos + 5, height - 15, 3, 255, 0, 0);
+
+			break;
+			
+
+		}
+
+	}
+
+
+	SDL_SetRenderDrawColor(m_p_render_instance->getRenderer(), 150, 150, 150, 100);
+	SDL_RenderFillRect(m_p_render_instance->getRenderer(), &rect_box);
+	SDL_RenderDrawRect(m_p_render_instance->getRenderer(), &rect_box);
+
 }
 
 void GUI::drawText_r(int x_pos, int y_pos, std::string text, std::string font)
@@ -338,12 +444,80 @@ void GUI::drawText_r(int x_pos, int y_pos, std::string text, std::string font)
 	}
 
 
-
 }
 
 void GUI::drawText_r(int x_pos, int y_pos, int numbers, std::string font)
 {
 	drawText_r(x_pos, y_pos, std::to_string(numbers), font);
+}
+
+void GUI::drawText_r(int x_pos, int y_pos, std::string text, std::string font, int box_r, int box_g, int box_b)
+{
+	int nmbr_of_characters = text.length();
+
+	SDL_Rect rect_box;
+	SDL_Rect rect_text;
+	rect_text.x = x_pos;
+	rect_text.y = y_pos;
+
+	int symbol_width = 0;
+	int symbol_height = 0;
+
+	int total_width = 0;
+
+	//Check and add up the total width of all the symbols
+	for (int i = 0; i < nmbr_of_characters; i++)
+	{
+		char single_symbol = text.at(i);
+
+		if (SDL_QueryTexture(s_m_font_collection.at(font).at(single_symbol), NULL, NULL, &symbol_width, &symbol_height) < 0)
+		{
+			m_p_logger->writeLog(LogLevel::ERROR, m_log_origin + " SDL_QUERY_TEXTURE", SDL_GetError());
+		}
+
+		total_width += symbol_width;
+	}
+
+	rect_text.x -= total_width;
+
+
+	//First, the Top_Left position of the rectangle has to be calculated
+	rect_box.x = rect_text.x - 2;
+	rect_box.y = y_pos - 2;
+
+	for (int i = 0; i < nmbr_of_characters; i++)
+	{
+		char single_symbol = text.at(i);
+		//std::cout << "Single symbol: " << single_symbol << std::endl;
+
+		if (SDL_QueryTexture(s_m_font_collection.at(font).at(single_symbol), NULL, NULL, &symbol_width, &symbol_height) < 0)
+		{
+			m_p_logger->writeLog(LogLevel::ERROR, m_log_origin + " SDL_QUERY_TEXTURE", SDL_GetError());
+		}
+
+		rect_text.w = symbol_width;
+		rect_text.h = symbol_height;
+		total_width += symbol_width;
+
+		if (SDL_RenderCopy(m_p_render_instance->getRenderer(), s_m_font_collection.at(font).at(single_symbol), NULL, &rect_text) < 0)
+		{
+			std::cout << "Error SDL_RenderCopy" << std::endl;
+			m_p_logger->writeLog(LogLevel::ERROR, m_log_origin + " DRAW-TEXT__SDL_RENDER_COPY", SDL_GetError());
+		}
+
+
+		rect_text.x += rect_text.w;
+	}
+
+	rect_box.w = total_width + 2;
+	rect_box.h = rect_text.h + 2;
+
+	SDL_SetRenderDrawColor(m_p_render_instance->getRenderer(), box_r, box_g, box_b, 100);
+	SDL_RenderFillRect(m_p_render_instance->getRenderer(), &rect_box);
+	SDL_RenderDrawRect(m_p_render_instance->getRenderer(), &rect_box);
+
+	//std::cout << "Draw cursor on object nmbr: " << m_currently_selected_object_for_cursor << std::endl;
+
 }
 
 void GUI::prepareXYWHPosition(int xpos, int ypos, int width, int height, std::string name)
