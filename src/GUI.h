@@ -18,6 +18,7 @@
 //class GUI.h
 //@brief class to handle the shown object on the display. Possible to create multiple instances of this class to make changing of shown objects on the display simpler
 //@brief All instances should use the same renderer
+//@brief The display height is 800, the display width is 480
 class GUI
 {
 public:
@@ -35,9 +36,9 @@ public:
 	//@param texture_name Name of the texture to draw
 	//@param rotation Rotation value of the texture in degrees
 	//@param state Use this function together with HW_CON::getDoubleInputState(), mainly for valves, that have to position sensors (one active when open, one active when closed)
-	void drawVisualElement(int x_pos, int y_pos, int height, int width, int r, int g, int b);
-	void drawVisualElement(int x_pos, int y_pos, int height, int width, std::string texture_name);
-	void drawVisualElement(int x_pos, int y_pos, int height, int width, int rotation, std::string texture_name);
+	void drawVisualElement(int x_pos, int y_pos, int width, int height, int r, int g, int b);
+	void drawVisualElement(int x_pos, int y_pos, int width, int height, std::string texture_name);
+	void drawVisualElement(int x_pos, int y_pos, int width, int height, int rotation, std::string texture_name);
 	void drawVisualElement(std::string pos_object_name,  std::string texture_name);
 	void drawVisualElement(std::string pos_object_name, int rotation, std::string texture_name);
 	void drawVisualElement(std::string pos_object_name, int state);
@@ -57,12 +58,13 @@ public:
 	//@param x_pos x-Position (Top left of the text element)
 	//@param y_pos y-Position (Top left of the text element)
 	//@param height,width if the occupied space of text should not exceed a specific area, use those values
-	//2param scrollpos if the text doesn't fit in the predefined space, scroll it with this value
+	//@param scrollpos if the text doesn't fit in the predefined space, change the first object of the vector that is getting displayed
 	//@param spacing Vertical distance beetwen the bottom of texts
 	//@param text Value that should be displayed
 	//@param font Font-variant from collection that should be used
 	void drawList_l(int x_pos, int y_pos, int spacing,  std::vector<std::string> text, std::string font);
-	void drawList_l(int x_pos, int y_pos, int spacing, int height, int width, int scrollpos, std::vector<std::string> text, std::string font);
+	void drawList_l(int x_pos, int y_pos, int spacing, int width, int height, int scrollpos, std::vector<std::string> text, std::string font);
+	
 
 	//@brief Function to draw the text in the backbuffer
 	//@param x_pos x-Position (Top right of the text element)
@@ -122,6 +124,8 @@ public:
 	//@param direction Direction in which the cursor should be moved (-1 / +1)
 	void moveCursor(int direction);
 
+	void setScrollPos(int scrollpos);
+
 	//void TESTDRAWTEXT();
 
 
@@ -134,6 +138,9 @@ private:
 
 	Render* m_p_render_instance;
 	Log* m_p_logger;
+
+	//last scrolling position, used for the list
+	int m_scroll_position;
 
 	//Font Handling
 

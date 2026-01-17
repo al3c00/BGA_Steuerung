@@ -27,6 +27,8 @@ GUI::GUI(Log* logger, Render* renderer)
 	m_ammount_selectable_objects = 0;
 	m_cursor_active = false;
 
+	m_scroll_position = 0;
+
 }
 
 
@@ -41,7 +43,7 @@ void GUI::drawBackGroundColor(int r, int g, int b)
 
 
 
-void GUI::drawVisualElement(int x_pos, int y_pos, int height, int width, int r, int g, int b)
+void GUI::drawVisualElement(int x_pos, int y_pos, int width, int height,  int r, int g, int b)
 {
 	SDL_Rect element_rect;
 	element_rect.x = x_pos;
@@ -54,7 +56,7 @@ void GUI::drawVisualElement(int x_pos, int y_pos, int height, int width, int r, 
 	SDL_RenderDrawRect(m_p_render_instance->getRenderer(), &element_rect);
 }
 
-void GUI::drawVisualElement(int x_pos, int y_pos, int height, int width, std::string name)
+void GUI::drawVisualElement(int x_pos, int y_pos, int width, int height,  std::string name)
 {
 	SDL_Rect draw_rect{ 0 };
 	draw_rect.x = x_pos;
@@ -67,7 +69,7 @@ void GUI::drawVisualElement(int x_pos, int y_pos, int height, int width, std::st
 	}
 }
 
-void GUI::drawVisualElement(int x_pos, int y_pos, int height, int width, int rotation, std::string name)
+void GUI::drawVisualElement(int x_pos, int y_pos, int width, int height,  int rotation, std::string name)
 {
 	SDL_Rect draw_rect;
 	draw_rect.x = x_pos;
@@ -170,6 +172,11 @@ void GUI::moveCursor(int direction)
 
 	
 	
+}
+
+void GUI::setScrollPos(int scrollpos)
+{
+	m_scroll_position = 0;
 }
 
 
@@ -322,12 +329,12 @@ void GUI::drawList_l(int x_pos, int y_pos, int spacing,  std::vector<std::string
 	}
 }
 
-void GUI::drawList_l(int x_pos, int y_pos, int spacing, int height, int width, int scrollpos,  std::vector<std::string> text, std::string font)
+void GUI::drawList_l(int x_pos, int y_pos, int spacing, int width, int height, int scrollpos,  std::vector<std::string> text, std::string font)
 {
 	//The text that should be displayed on one line
 	std::string line_text;
 
-	int vertical_text_pos = y_pos;//The y-position of the text line
+	int vertical_text_pos = y_pos + 5;//The y-position of the text line. Lower the first line by 5 pixels to create distance
 
 	SDL_Rect rect_box;
 	rect_box.x = x_pos;
@@ -335,7 +342,24 @@ void GUI::drawList_l(int x_pos, int y_pos, int spacing, int height, int width, i
 	rect_box.w = width;
 	rect_box.h = height;
 
-	for (int i = 0; i < text.size(); i++)
+	m_scroll_position += scrollpos;
+
+	if (m_scroll_position < 0)
+	{
+		m_scroll_position = 0;
+	}
+
+	if (m_scroll_position > text.size() - 1)
+	{
+		m_scroll_position = text.size() - 1;
+	}
+
+	SDL_SetRenderDrawColor(m_p_render_instance->getRenderer(), 150, 150, 150, 100);
+	SDL_RenderFillRect(m_p_render_instance->getRenderer(), &rect_box);
+	SDL_RenderDrawRect(m_p_render_instance->getRenderer(), &rect_box);
+
+
+	for (int i = 0 + m_scroll_position; i < text.size(); i++)
 	{
 		line_text.clear();
 		line_text = std::to_string(i) + ")" + text.at(i);
@@ -373,24 +397,20 @@ void GUI::drawList_l(int x_pos, int y_pos, int spacing, int height, int width, i
 			rect_text.x += rect_text.w;
 		}
 
-		vertical_text_pos += spacing;
 		if (vertical_text_pos > x_pos + height)
 		{
-			drawVisualElement(x_pos + width - 5, y_pos + 5, height - 15, 3, 255, 0, 0);
-
 			break;
-			
-
 		}
 
+		vertical_text_pos += spacing;
+
+
 	}
-
-
-	SDL_SetRenderDrawColor(m_p_render_instance->getRenderer(), 150, 150, 150, 100);
-	SDL_RenderFillRect(m_p_render_instance->getRenderer(), &rect_box);
-	SDL_RenderDrawRect(m_p_render_instance->getRenderer(), &rect_box);
+	drawText_l(x_pos, y_pos + height, "Benutze Drehrad zum Scrollen!", "ARIAL_Black");
 
 }
+
+
 
 void GUI::drawText_r(int x_pos, int y_pos, std::string text, std::string font)
 {
