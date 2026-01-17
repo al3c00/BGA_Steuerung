@@ -38,6 +38,7 @@ Die Funktionen in der .txt-Datei nutzen folgende Syntax:
 |"{"|Markiert den Beginn der Sequenz|
 |Funktionsname(Parameter1, ev. Parameter2)|Siehe die oben beschriebenen Funktionen oder im Quellcode Sequencehandler.h|
 |"}"|Markiert das Ende der Sequenz|
+
 Alle Sequenzen werden in derselben Datei gespeichert.
 
 
