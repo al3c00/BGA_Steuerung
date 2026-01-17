@@ -84,7 +84,8 @@ int main()
 
 
 	sequence_overview.loadFont("ARIAL_Black", "/fonts/arial.ttf", 0, 0, 0);
-
+	sequence_overview.loadTexture("Dreieck_Rechts", "/resource/dreieck_rechts.png");
+	sequence_overview.loadTexture("Dreieck_Links", "/resource/dreieck_links.png");
 
 
 	std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
@@ -97,7 +98,7 @@ int main()
 	std::string str_current_time;
 
 
-	int asked_sequence = 0;
+	
 
 	//Main loop
 	//{
@@ -109,6 +110,10 @@ int main()
 	gui_state = GUI_STATE::SEQUENCE_OVERVIEW;
 	
 	int rotation = 0;
+	int asked_sequence = 0;
+	int scrollpos = 0;
+
+
 	do
 	{
 
@@ -127,14 +132,14 @@ int main()
 		if (total_time_last_frame.count() > static_cast<float>(1000) /target_fps)
 		{	
 
-			if (!hw->getDigitalInputState("D_In_1"))
-			{
-				hw->setDigitalOutputState(true, "D_Out_0");
-			}
-			else if (hw->getDigitalInputState("D_In_1"))
-			{
-				hw->setDigitalOutputState(false, "D_Out_0");
-			}
+			//if (!hw->getDigitalInputState("D_In_1"))
+			//{
+			//	hw->setDigitalOutputState(true, "D_Out_0");
+			//}
+			//else if (hw->getDigitalInputState("D_In_1"))
+			//{
+			//	hw->setDigitalOutputState(false, "D_Out_0");
+			//}
 
 			if (hw->getButton2Press())
 			{
@@ -163,7 +168,7 @@ int main()
 			{
 				asked_sequence = 0;
 			}
-			else if(asked_sequence > sqh.getAmmountOfLoadedSequences() -1)
+			if(asked_sequence > sqh.getAmmountOfLoadedSequences() -1)
 			{
 				asked_sequence = sqh.getAmmountOfLoadedSequences() -1;
 			}
@@ -195,10 +200,10 @@ int main()
 
 				
 				system_diagram.drawBackGroundColor(225, 225, 225);
-				system_diagram.drawVisualElement(0, 0, 800, 480, "Schema");
+				system_diagram.drawVisualElement(0, 0, 480, 800, "Schema");
 
 				//Info Elements: Time and date, FPS, ms/frame
-				system_diagram.drawVisualElement(0, 0, 30, 480, 245, 245, 245);
+				system_diagram.drawVisualElement(0, 0, 480, 30, 245, 245, 245);
 				system_diagram.drawText_l(231, 9, "FPS: " + std::to_string(target_fps), "ARIAL_Black");
 				system_diagram.drawText_r(473, 9, "Time(ms)/frame: " + std::to_string((int)total_time_last_frame.count()), "ARIAL_Black");
 				system_diagram.drawText_l(7, 9, str_current_time, "ARIAL_Black");
@@ -229,22 +234,31 @@ int main()
 
 				else if (gui_state == GUI_STATE::SEQUENCE_OVERVIEW)
 				{
+					
 
 					sequence_overview.drawBackGroundColor(225, 225, 225);
 
 					//Info Elements: Time and date, FPS, ms/frame
-					sequence_overview.drawVisualElement(0, 0, 30, 480, 245, 245, 245);
+					sequence_overview.drawVisualElement(0, 0, 480, 30, 245, 245, 245);
 					sequence_overview.drawText_l(231, 9, "FPS: " + std::to_string(target_fps), "ARIAL_Black");
 					sequence_overview.drawText_r(473, 9, "Time(ms)/frame: " + std::to_string((int)total_time_last_frame.count()), "ARIAL_Black");
 					sequence_overview.drawText_l(7, 9, str_current_time, "ARIAL_Black");
 
 					//Sequenzname
-					sequence_overview.drawText_l(10, 40, "Sequenz: " + sqh.getSequenceName(asked_sequence), "ARIAL_Black");
+					sequence_overview.drawText_l(10, 40, "Angezeigte Sequenz: " + sqh.getSequenceName(asked_sequence), "ARIAL_Black");
 					//Sequenznummer
 					sequence_overview.drawText_r(473, 40, std::to_string(asked_sequence + 1) + " / " + std::to_string(sqh.getAmmountOfLoadedSequences()), "ARIAL_Black", 140, 140, 140);
 
 
-					sequence_overview.drawList_l(10, 55, 25, 300, 300, 0, sqh.getSequenceFunctions(asked_sequence), "ARIAL_Black");
+					sequence_overview.drawList_l(10, 60, 22, 350, 630, hw->getEncoderDirection(), sqh.getSequenceFunctions(asked_sequence), "ARIAL_Black");
+
+					sequence_overview.drawText_l(10, 710, "Vorherige Sequenz: Taste 3", "ARIAL_Black");
+					sequence_overview.drawText_r(470, 710, "Naechste Sequenz: Taste 4", "ARIAL_Black");
+					sequence_overview.drawVisualElement(10, 726, 64, 64, "Dreieck_Links");
+					sequence_overview.drawVisualElement(406, 726, 64, 64, "Dreieck_Rechts");//xpos = 480-10-64, ypos = 800-10-64
+
+					sequence_overview.drawText_l(370, 60, "Sequence1: " + std::to_string(sqh.getExecutionStep("Sequence1")), "ARIAL_Black");
+					sequence_overview.drawText_l(370, 80, "Sequence2: " + std::to_string(sqh.getExecutionStep("Sequence2")), "ARIAL_Black");
 					
 				}
 

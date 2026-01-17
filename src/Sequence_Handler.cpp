@@ -67,14 +67,23 @@ void Sequence_Handler::loadSeq(std::string path)
 		{
 			if (temp == "WAIT")
 			{
-				m_complete_sequence.push_back({"WAIT",  SEQ_FUNCTION_TYPE::NOT_DEFINED, 0, 0, "", ""});
+				m_complete_sequence.push_back({"WAIT",  SEQ_FUNCTION_TYPE::NOT_DEFINED, -1, -1, "", ""});
 				m_complete_sequence.at(sequence_step).type = SEQ_FUNCTION_TYPE::WAIT;
 				seq_step_awaits_string_params = false;
 				temp.clear();
 			}
+			else if (temp == "JUMP_TO")
+			{
+				m_complete_sequence.push_back({ "JUMP_TO", SEQ_FUNCTION_TYPE::NOT_DEFINED, -1, -1, "", "" });
+				m_complete_sequence.at(sequence_step).type = SEQ_FUNCTION_TYPE::JUMP_TO;
+				seq_step_awaits_string_params = false;
+				seq_step_awaits_both_params = false;
+				temp.clear();
+			}
+
 			else if (temp == "PROGRESS_IF_1")
 			{
-				m_complete_sequence.push_back({"PROGRESS_IF_1", SEQ_FUNCTION_TYPE::NOT_DEFINED, 0, 0, "", ""});
+				m_complete_sequence.push_back({"PROGRESS_IF_1", SEQ_FUNCTION_TYPE::NOT_DEFINED, -1, -1, "", ""});
 				m_complete_sequence.at(sequence_step).type = SEQ_FUNCTION_TYPE::PROGRESS_IF_1;
 				seq_step_awaits_string_params = false;
 				seq_step_awaits_both_params = true;
@@ -82,30 +91,31 @@ void Sequence_Handler::loadSeq(std::string path)
 			}
 			else if (temp == "GET_DIGITAL_INPUT")
 			{
-				m_complete_sequence.push_back({ "PROGRESS_IF_2", SEQ_FUNCTION_TYPE::NOT_DEFINED, 0, 0, "", "" });
+				m_complete_sequence.push_back({ "PROGRESS_IF_2", SEQ_FUNCTION_TYPE::NOT_DEFINED, -1, -1, "", "" });
 				m_complete_sequence.at(sequence_step).type = SEQ_FUNCTION_TYPE::GET_DIGITAL_INPUT;
 				seq_step_awaits_string_params = true;
 				temp.clear();
 			}
 			else if (temp == "GET_DOUBLE_DIGITAL_INPUT")
 			{
-				m_complete_sequence.push_back({ "GET_DOUBLE_DIGITAL_INPUT", SEQ_FUNCTION_TYPE::NOT_DEFINED, 0, 0, "", "" });
+				m_complete_sequence.push_back({ "GET_DOUBLE_DIGITAL_INPUT", SEQ_FUNCTION_TYPE::NOT_DEFINED, -1, -1, "", "" });
 				m_complete_sequence.at(sequence_step).type = SEQ_FUNCTION_TYPE::GET_DOUBLE_DIGITAL_INPUT;
 				seq_step_awaits_string_params = true;
 				temp.clear();
 			}
 			else if (temp == "SWITCH_DIGITAL_OUTPUT")
 			{
-				m_complete_sequence.push_back({"SWITCH_DIGITAL_OUTPUT", SEQ_FUNCTION_TYPE::NOT_DEFINED, 0, 0, "", ""});
+				m_complete_sequence.push_back({"SWITCH_DIGITAL_OUTPUT", SEQ_FUNCTION_TYPE::NOT_DEFINED, -1, -1, "", ""});
 				m_complete_sequence.at(sequence_step).type = SEQ_FUNCTION_TYPE::SWITCH_DIGITAL_OUTPUT;
 				seq_step_awaits_string_params = true;
 				temp.clear();
 			}
 			else if (temp == "SET_DIGITAL_OUTPUT")
 			{
-				m_complete_sequence.push_back({"SET_DIGITAL_OUTPUT", SEQ_FUNCTION_TYPE::NOT_DEFINED, 0, 0, "", ""});
+				m_complete_sequence.push_back({"SET_DIGITAL_OUTPUT", SEQ_FUNCTION_TYPE::NOT_DEFINED, -1, -1, "", ""});
 				m_complete_sequence.at(sequence_step).type = SEQ_FUNCTION_TYPE::SET_DIGITAL_OUTPUT;
 				seq_step_awaits_string_params = true;
+				seq_step_awaits_both_params = true;
 				temp.clear();
 			}
 
@@ -205,7 +215,13 @@ void Sequence_Handler::loadSeq(std::string path)
 
 void Sequence_Handler::startSequence(std::string name)
 {
-	m_running_sequences_map.insert({ name, std::thread(&Sequence_Handler::m_playSequence, this, name) });
+	m_running_sequences_info.insert({ name, {0} });
+	std::thread(&Sequence_Handler::m_playSequence, this, name, std::ref(m_running_sequences_info)).detach();
+}
+
+int Sequence_Handler::getExecutionStep(std::string name)
+{
+	return m_running_sequences_info.at(name).current_step;
 }
 
 std::vector<std::string> Sequence_Handler::getSequenceFunctions(std::string name)
@@ -218,7 +234,7 @@ std::vector<std::string> Sequence_Handler::getSequenceFunctions(std::string name
 
 		for (int i = 0; i < m_complete_sequence_map.at(name).size(); i++)
 		{
-			m_sequence_return_vector.push_back(m_complete_sequence_map.at(name).at(i).seq_function_name);
+			m_sequence_return_vector.push_back(m_complete_sequence_map.at(name).at(i).seq_function_name + " " + m_complete_sequence_map.at(name).at(i).param_string1);
 		}
 	}
 	return m_sequence_return_vector;
@@ -236,10 +252,32 @@ std::vector<std::string> Sequence_Handler::getSequenceFunctions(int number)
 
 		m_sequence_return_number = number;
 
+		
 		for (int i = 0; i < m_complete_sequence_map.at(m_loaded_sequences_names.at(number)).size(); i++)
 		{
+			//Getting function name
 			m_sequence_return_vector.push_back(m_complete_sequence_map.at(m_loaded_sequences_names.at(number)).at(i).seq_function_name);
+
+			//Getting the params
+			//In the return vector .at(0) is START, so the add 1 to i when appending the params
+			if (m_complete_sequence_map.at(m_loaded_sequences_names.at(number)).at(i).param_int1 != -1)
+			{
+				m_sequence_return_vector.at(i).append("(" + std::to_string(m_complete_sequence_map.at(m_loaded_sequences_names.at(number)).at(i).param_int1)+ ")");
+			}
+			if (m_complete_sequence_map.at(m_loaded_sequences_names.at(number)).at(i).param_int2 != -1)
+			{
+				m_sequence_return_vector.at(i).append("(" + std::to_string(m_complete_sequence_map.at(m_loaded_sequences_names.at(number)).at(i).param_int2)+ ")");
+			}
+			if (!m_complete_sequence_map.at(m_loaded_sequences_names.at(number)).at(i).param_string1.empty())
+			{
+				m_sequence_return_vector.at(i).append("(" + m_complete_sequence_map.at(m_loaded_sequences_names.at(number)).at(i).param_string1 + ")");
+			}
+			if (!m_complete_sequence_map.at(m_loaded_sequences_names.at(number)).at(i).param_string2.empty())
+			{
+				m_sequence_return_vector.at(i).append("(" + m_complete_sequence_map.at(m_loaded_sequences_names.at(number)).at(i).param_string2 + ")");
+			}
 		}
+
 
 	}
 
@@ -263,16 +301,27 @@ int Sequence_Handler::getAmmountOfLoadedSequences()
 	return m_loaded_sequences_names.size();
 }
 
-void Sequence_Handler::m_playSequence(std::string name)
+void Sequence_Handler::m_playSequence(std::string name, std::map<std::string, RunningSeqInfo>& running_sequences)
 {
 	for (int i = 0; i < m_complete_sequence_map.at(name).size(); i++)
 	{
+		running_sequences.at(name).current_step = i;
+
+
 		switch (m_complete_sequence_map.at(name).at(i).type)
 		{
 		case SEQ_FUNCTION_TYPE::WAIT:
 		{
 			std::this_thread::sleep_for(std::chrono::milliseconds(m_complete_sequence_map.at(name).at(i).param_int1));
 		}break;
+
+		//Jump to a specific position of the sequence
+		case SEQ_FUNCTION_TYPE::JUMP_TO:
+		{
+			i = m_complete_sequence_map.at(name).at(i).param_int1;
+		}break;
+		
+		//Progress if the input criteria of ONE input is met
 		case SEQ_FUNCTION_TYPE::PROGRESS_IF_1:
 		{
 			int should_be_value = m_complete_sequence_map.at(name).at(i).param_int1;
@@ -310,6 +359,9 @@ void Sequence_Handler::m_playSequence(std::string name)
 
 		}break;
 
+		//Progress if the input of TWO inputs are met
+		//Use to check devices with to inputs (e.g. a cylinder where the in and out position both have a seperate sensor)
+		//Use the conditions from HW_Con::getDoubleInputState
 		case SEQ_FUNCTION_TYPE::PROGRESS_IF_2:
 		{
 			int should_be_value = m_complete_sequence_map.at(name).at(i).param_int1;
@@ -318,7 +370,7 @@ void Sequence_Handler::m_playSequence(std::string name)
 			int return_value = 0;
 
 			//Can only be used on digital inputs
-		
+			//Sets a sleep time for 50ms and then checks again if the values are not met
 			do
 			{
 				
@@ -337,6 +389,10 @@ void Sequence_Handler::m_playSequence(std::string name)
 		case SEQ_FUNCTION_TYPE::SWITCH_DIGITAL_OUTPUT:
 		{
 			m_p_hw_con->switchDigitalOutputState(m_complete_sequence_map.at(name).at(i).param_string1);
+		}break;
+		case SEQ_FUNCTION_TYPE::SET_DIGITAL_OUTPUT:
+		{
+			m_p_hw_con->setDigitalOutputState(m_complete_sequence_map.at(name).at(i).param_int1, m_complete_sequence_map.at(name).at(i).param_string1);
 		}break;
 		}
 	}
