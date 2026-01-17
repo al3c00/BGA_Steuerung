@@ -35,9 +35,9 @@ Die Funktionen in der .txt-Datei nutzen folgende Syntax:
 |Objekt|Beschrieb|
 |---|---|
 |#Sequencename|Name der Sequenz. Dieser wird im Quellcode für die Zuordnung an verschiedensten Stellen benutzt.| 
-|{|Markiert den Beginn der Sequenz|
+|"{"|Markiert den Beginn der Sequenz|
 |Funktionsname(Parameter1, ev. Parameter2)|Siehe die oben beschriebenen Funktionen oder im Quellcode Sequencehandler.h|
-|}Markiert das Ender der Sequenz|
+|"}"|Markiert das Ende der Sequenz|
 Alle Sequenzen werden in derselben Datei gespeichert.
 
 
