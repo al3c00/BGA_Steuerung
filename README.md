@@ -2,16 +2,9 @@
 
 ## Übersicht:
 
-Dieses Repository enthält Platine-Daten und Software zur Steuerung und Überwachung der Substratflüsse einer landwirtschaftlichen Biogasanlage. 
+Dieses Repository enthält Platine-Daten und Software zur Steuerung und Überwachung der Substratflüsse einer landwirtschaftlichen Biogasanlage. Angesteuert werden elektrische Motoren (Pumpen und Mischmotoren) mitels Schützrelais sowie pneumatisch gesteuerte Schieber mit einem 24V 5/2 Pneumatikventil.
 
 ## Funktion:
-
-### Biogasanlage allgemein:
-
-Auf dem Landwirtschaftsbetrieb wird eine Biogasanalge des Types Haral-Energie geplant. Diese zeichnet sich durch den eckigen, unterirdischen Fermenter aus. Das gewonnene Gas wird in einem Blockheizkraftwerk verbrannt, wobei Wärme und im gekoppelten Generator Strom entsteht. Die Wärme wird für die Versorgung des Landwirtschaftsbetriebs genutzt, der Strom wird in das öffentliche Netz eingespiesen.
-Die Anlage besteht aus einer Vorgrube (Mischen der Substrate), einem Fermenter (Methangaserzeugung) und einem Endlager.
-Gasführende Anlagenteile werden durch diese Steuerung nicht beeinflusst. 
-Für den Betrieb der gesamten Anlage sind mehrere Pumpen und Schieber sowie ein Motor für den Betrieb des Festsoffmischers nötig. Die meisten werden neu installiert und werden mit einer Schützsteuerung bedient. Für die bereits bestehende Pumpe, welche mit Funk bedient wird, wird ein stationäres Ergänzungsfunksendemodul installiert. Die Schieber werden pneumatisch gesteuert. Der Luftfluss wird mit 12v 5/2 Pneumatikventilen geregelt.
 
 ## Schnittstellen der Steuerungsplatine:
 
@@ -28,13 +21,24 @@ Es können folgende Funktionen verwendet werden:
 |Funktionsname|Beschrieb|Parameter_int1|Parameter_int2|Parameter_string1|Parameter_string2|
 |---|---|---|---|---|---|
 |WAIT|Stoppt die Ausführung der Sequenz indem der Thread mittels std::this_thread::sleep_for angehalten wird|Wartezeit in Millisekunden (ms)|-|-|-|
-|PROGRESS_IF|Die Ausführung der Sequenz wird angehalten bis eine bestimmte Bedingung erfüllt ist|int_Zustand, der zu erfüllen ist|-|Input, der abgefragt wird|string-Zustand, der zu erfüllen ist|
+|JUMP_TO|Springt zu einer bestimmten Position in der Sequenz und fährt dort weiter|Zielposition (0 bis n)|-|-|-|
+|PROGRESS_IF_1|Die Ausführung der Sequenz wird angehalten bis eine bestimmte Bedingung erfüllt ist an **einem** Input erfüllt ist|int_Zustand, der zu erfüllen ist|-|Input, der abgefragt wird|-|
+|PROGRESS_IF_2|Die Ausführung der Sequenz wird angehalten bis eine bestimmte Bedingung erfüllt ist an **zwei** Inputs erfüllt ist (siehe HW_Con::getDoubleInputState|int_Zustand, der zu erfüllen ist|-|Input, der abgefragt wird|Input, der abgefragt wird|
 |GET_DIGITAL_INPUT|Der aktuelle Zustand eines digitalen Inputs wird abgefragt|-|-|Input, der abgefragt wird|-|
 |GET_DOUBLE_DIGITAL_INPUT|Die Funktion "getDoubleInputState" wird verwendet, um die Sensorwerte eines mechanischen Bauteils, dass Stellung An und Aus überwacht (nicht nur eine von beiden) zu überprüfen|-|-|Input1, der abgefragt wird|Input2, der abgefragt wird|
 |GET_ANALOG_INPUT|Der aktuelle Zustand eines analogen Inputs wird abgefragt|-|-|Input, der abgefragt wird|-|
 |SET_DIGITAL_OUTPUT|Der Zustand eines digitalen Outputs wird unabhängig von seinem aktuellen Zustand gesetzt|Zustand, der gesetzt werden soll (0/1, eigentlich Bool)|-|Output, der gesetzt werden soll|-|
 |SWITCH_DIGITAL_OUTPUT|Der Zustand eines digitalen Outputs wird abhängig von seinem aktuellen Zustand ins Gegenteil gesetzt|-|-|Output, der gesetzt werden soll|-|
 |NOT_DEFINED|Wird verwendet, um Fehler abzufangen und die struct zu konstruieren
+
+Die Funktionen in der .txt-Datei nutzen folgende Syntax:
+|Objekt|Beschrieb|
+|#Sequencename|Name der Sequenz. Dieser wird im Quellcode für die Zuordnung an verschiedensten Stellen benutzt.| 
+|{|Markiert den Beginn der Sequenz|
+|Funktionsname(Parameter1, ev. Parameter2)|Siehe die oben beschriebenen Funktionen oder im Quellcode Sequencehandler.h|
+|}Markiert das Ender der Sequenz|
+Alle Sequenzen werden in derselben Datei gespeichert.
+
 
 ## Software:
 ### Allgemein:
