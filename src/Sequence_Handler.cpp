@@ -72,6 +72,34 @@ void Sequence_Handler::loadSeq(std::string path)
 				seq_step_awaits_string_params = false;
 				temp.clear();
 			}
+			else if (temp == "WAIT_S")
+			{
+				m_complete_sequence.push_back({ "WAIT_S:",  SEQ_FUNCTION_TYPE::NOT_DEFINED, -1, -1, "", "" });
+				m_complete_sequence.at(sequence_step).type = SEQ_FUNCTION_TYPE::WAIT_S;
+				seq_step_awaits_string_params = false;
+				temp.clear();
+			}
+			else if (temp == "WAIT_MIN")
+			{
+				m_complete_sequence.push_back({ "WAIT_MIN:",  SEQ_FUNCTION_TYPE::NOT_DEFINED, -1, -1, "", "" });
+				m_complete_sequence.at(sequence_step).type = SEQ_FUNCTION_TYPE::WAIT_MIN;
+				seq_step_awaits_string_params = false;
+				temp.clear();
+			}
+			else if (temp == "WAIT_H")
+			{
+				m_complete_sequence.push_back({ "WAIT_H:",  SEQ_FUNCTION_TYPE::NOT_DEFINED, -1, -1, "", "" });
+				m_complete_sequence.at(sequence_step).type = SEQ_FUNCTION_TYPE::WAIT_H;
+				seq_step_awaits_string_params = false;
+				temp.clear();
+			}
+			else if (temp == "WAIT_UNTIL")
+			{
+				m_complete_sequence.push_back({ "WAIT_UNTIL:",  SEQ_FUNCTION_TYPE::NOT_DEFINED, -1, -1, "", "" });
+				m_complete_sequence.at(sequence_step).type = SEQ_FUNCTION_TYPE::WAIT_UNTIL;
+				seq_step_awaits_string_params = false;
+				temp.clear();
+			}
 			else if (temp == "JUMP_TO")
 			{
 				m_complete_sequence.push_back({ "JUMP_TO", SEQ_FUNCTION_TYPE::NOT_DEFINED, -1, -1, "", "" });
@@ -321,9 +349,49 @@ void Sequence_Handler::m_playSequence(std::string name, std::map<std::string, Ru
 
 		switch (m_complete_sequence_map.at(name).at(current_step).type)
 		{
+		//wait functions in different time units: milliseconds, seconds, minutes, hours
 		case SEQ_FUNCTION_TYPE::WAIT_MS:
 		{
 			std::this_thread::sleep_for(std::chrono::milliseconds(m_complete_sequence_map.at(name).at(current_step).param_int1));
+		}break;
+
+		case SEQ_FUNCTION_TYPE::WAIT_S:
+		{
+			std::this_thread::sleep_for(std::chrono::seconds(m_complete_sequence_map.at(name).at(current_step).param_int1));
+		}break;
+		case SEQ_FUNCTION_TYPE::WAIT_MIN:
+		{
+			std::this_thread::sleep_for(std::chrono::minutes(m_complete_sequence_map.at(name).at(current_step).param_int1));
+		}break;
+		case SEQ_FUNCTION_TYPE::WAIT_H:
+		{
+			std::this_thread::sleep_for(std::chrono::hours(m_complete_sequence_map.at(name).at(current_step).param_int1));
+		}break;
+
+		//wait until specific time. Format: HHMM --> 1235 =  12:35, uses two int parameters
+		case SEQ_FUNCTION_TYPE::WAIT_UNTIL:
+		{
+			std::time_t t_t = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+			std::tm time_struct;
+			localtime_r(&t_t, &time_struct);
+			std::cout << "Starting to wait at: " << std::put_time(&time_struct, "%H:%M:%S") << std::endl;
+
+
+			int hour = m_complete_sequence_map.at(name).at(current_step).param_int1;
+			int minute = m_complete_sequence_map.at(name).at(current_step).param_int1;
+
+			bool time_reached = false;
+			do
+			{
+				std::this_thread::sleep_for(std::chrono::seconds(30));
+
+				if (time_struct.tm_hour >= hour && time_struct.tm_min >= minute)
+				{
+					time_reached = true;
+				}
+
+			} while (!time_reached);
+			
 		}break;
 
 		//Jump to a specific position of the sequence

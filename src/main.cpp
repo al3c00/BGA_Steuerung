@@ -27,7 +27,7 @@ int main()
 		std::cout << SDL_GetError() << std::endl;
 	}
 
-	int gui_state = 2; //used to iterate over the different GUIs
+	int gui_state = 1; //used to iterate over the different GUIs
 	int nmbr_of_guis = 3;//Ammount of used guis 
 
 	//Initialize IMG
@@ -71,8 +71,9 @@ int main()
 
 
 	sqh.loadSeq("/configs/Sequences.txt");
-	sqh.startSequence("Sequence1");
+	sqh.startSequence("Sequence_wait_until");
 	sqh.startSequence("Sequence2");
+	sqh.startSequence("Sequence3");
 	
 	
 
@@ -249,7 +250,7 @@ int main()
 					//Sequenzname
 					sequence_overview.drawText_l(10, 40, "Angezeigte Sequenz: " + sqh.getSequenceName(asked_sequence), "ARIAL_Black");
 					//Sequenznummer
-					sequence_overview.drawText_l(240, 40, std::to_string(asked_sequence + 1) + " / " + std::to_string(sqh.getAmmountOfLoadedSequences()), "ARIAL_Black", 140, 140, 140);
+					sequence_overview.drawText_l(350, 40, std::to_string(asked_sequence + 1) + " / " + std::to_string(sqh.getAmmountOfLoadedSequences()), "ARIAL_Black", 140, 140, 140);
 
 
 					sequence_overview.drawList_l(10, 100, 22, 350, 630, hw->getButton3Press(), hw->getButton4Press(), sqh.getSequenceFunctions(asked_sequence), "ARIAL_Black");
@@ -260,8 +261,9 @@ int main()
 					//sequence_overview.drawVisualElement(406, 726, 32, 32, "Dreieck_Rechts");//xpos = 480-10-64, ypos = 800-10-64
 
 					sequence_overview.drawVisualElement(365, 70, 110, 60, 200, 200, 200, false);
-					sequence_overview.drawText_l(370, 75, "Sequence1: " + std::to_string(sqh.getExecutionStep("Sequence1")), "ARIAL_Black");
+					sequence_overview.drawText_l(370, 75, "Sequence1: " + std::to_string(sqh.getExecutionStep("Sequence_wait_until")), "ARIAL_Black");
 					sequence_overview.drawText_l(370, 95, "Sequence2: " + std::to_string(sqh.getExecutionStep("Sequence2")), "ARIAL_Black");
+					sequence_overview.drawText_l(370, 115, "Sequence3: " + std::to_string(sqh.getExecutionStep("Sequence3")), "ARIAL_Black");
 
 					sequence_overview.drawText_l(370, 135, "Pausiere: " , "ARIAL_Black");
 					sequence_overview.drawVisualElement(370, 170, 32, 32, "Sequenz_Play_Pause", false);
