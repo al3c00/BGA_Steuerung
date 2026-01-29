@@ -58,7 +58,7 @@ private:
 
 	std::mutex m_HW_Con_mutex;
 
-	enum SEQ_FUNCTION_TYPE {NOT_DEFINED, WAIT, JUMP_TO, PROGRESS_IF_1, PROGRESS_IF_2, GET_DIGITAL_INPUT, GET_DOUBLE_DIGITAL_INPUT, GET_ANALOG_INPUT, SET_DIGITAL_OUTPUT, SWITCH_DIGITAL_OUTPUT};
+	enum SEQ_FUNCTION_TYPE {NOT_DEFINED, WAIT_MS, JUMP_TO, PROGRESS_IF_1, PROGRESS_IF_2, GET_DIGITAL_INPUT, GET_DOUBLE_DIGITAL_INPUT, GET_ANALOG_INPUT, SET_DIGITAL_OUTPUT, SWITCH_DIGITAL_OUTPUT};
 
 	//Struct to describe one step/function in the sequences. Holds the function type as enum SEQ_FUNCTION_TYPE and 3 int parameters
 	struct Seq_Part_Info
@@ -86,6 +86,7 @@ private:
 	struct RunningSeqInfo
 	{
 		int current_step;//Current step of the sequence
+		bool extern_stop;//If the execution of the sequence should be stopped by an other part of the programm, set this to true
 	};
 
 	std::map<std::string, RunningSeqInfo>m_running_sequences_info;//Map that holds information about all the running threads. The key is the name of the sequence

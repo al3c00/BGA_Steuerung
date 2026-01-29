@@ -65,10 +65,10 @@ void Sequence_Handler::loadSeq(std::string path)
 
 		//If Functiontype is found, set the correct enum
 		{
-			if (temp == "WAIT")
+			if (temp == "WAIT_MS")
 			{
-				m_complete_sequence.push_back({"WAIT",  SEQ_FUNCTION_TYPE::NOT_DEFINED, -1, -1, "", ""});
-				m_complete_sequence.at(sequence_step).type = SEQ_FUNCTION_TYPE::WAIT;
+				m_complete_sequence.push_back({"WAIT_MS:",  SEQ_FUNCTION_TYPE::NOT_DEFINED, -1, -1, "", ""});
+				m_complete_sequence.at(sequence_step).type = SEQ_FUNCTION_TYPE::WAIT_MS;
 				seq_step_awaits_string_params = false;
 				temp.clear();
 			}
@@ -215,7 +215,7 @@ void Sequence_Handler::loadSeq(std::string path)
 
 void Sequence_Handler::startSequence(std::string name)
 {
-	m_running_sequences_info.insert({ name, {0} });
+	m_running_sequences_info.insert({ name, {0, false} });
 	std::thread(&Sequence_Handler::m_playSequence, this, name, std::ref(m_running_sequences_info)).detach();
 }
 
@@ -303,29 +303,40 @@ int Sequence_Handler::getAmmountOfLoadedSequences()
 
 void Sequence_Handler::m_playSequence(std::string name, std::map<std::string, RunningSeqInfo>& running_sequences)
 {
-	for (int i = 0; i < m_complete_sequence_map.at(name).size(); i++)
+	
+
+	for(int current_step = 0; current_step < m_complete_sequence_map.at(name).size(); current_step++)
 	{
-		running_sequences.at(name).current_step = i;
+		running_sequences.at(name).current_step = current_step;
+
+		//If the sequence is set to stop externaly, enter this condition and just wait 
+		if (running_sequences.at(name).extern_stop)
+		{
+			do
+			{
+				std::this_thread::sleep_for(std::chrono::milliseconds(200));
+			} while (running_sequences.at(name).extern_stop);
+		}
 
 
-		switch (m_complete_sequence_map.at(name).at(i).type)
+		switch (m_complete_sequence_map.at(name).at(current_step).type)
 		{
-		case SEQ_FUNCTION_TYPE::WAIT:
+		case SEQ_FUNCTION_TYPE::WAIT_MS:
 		{
-			std::this_thread::sleep_for(std::chrono::milliseconds(m_complete_sequence_map.at(name).at(i).param_int1));
+			std::this_thread::sleep_for(std::chrono::milliseconds(m_complete_sequence_map.at(name).at(current_step).param_int1));
 		}break;
 
 		//Jump to a specific position of the sequence
 		case SEQ_FUNCTION_TYPE::JUMP_TO:
 		{
-			i = m_complete_sequence_map.at(name).at(i).param_int1;
+			current_step = m_complete_sequence_map.at(name).at(current_step).param_int1;
 		}break;
 		
 		//Progress if the input criteria of ONE input is met
 		case SEQ_FUNCTION_TYPE::PROGRESS_IF_1:
 		{
-			int should_be_value = m_complete_sequence_map.at(name).at(i).param_int1;
-			std::string input_to_check1 = m_complete_sequence_map.at(name).at(i).param_string1;
+			int should_be_value = m_complete_sequence_map.at(name).at(current_step).param_int1;
+			std::string input_to_check1 = m_complete_sequence_map.at(name).at(current_step).param_string1;
 			bool check_digital = false;
 			int return_value;
 
@@ -364,9 +375,9 @@ void Sequence_Handler::m_playSequence(std::string name, std::map<std::string, Ru
 		//Use the conditions from HW_Con::getDoubleInputState
 		case SEQ_FUNCTION_TYPE::PROGRESS_IF_2:
 		{
-			int should_be_value = m_complete_sequence_map.at(name).at(i).param_int1;
-			std::string input_to_check1 = m_complete_sequence_map.at(name).at(i).param_string1;
-			std::string input_to_check2 = m_complete_sequence_map.at(name).at(i).param_string2;
+			int should_be_value = m_complete_sequence_map.at(name).at(current_step).param_int1;
+			std::string input_to_check1 = m_complete_sequence_map.at(name).at(current_step).param_string1;
+			std::string input_to_check2 = m_complete_sequence_map.at(name).at(current_step).param_string2;
 			int return_value = 0;
 
 			//Can only be used on digital inputs
@@ -383,19 +394,21 @@ void Sequence_Handler::m_playSequence(std::string name, std::map<std::string, Ru
 
 		case SEQ_FUNCTION_TYPE::GET_DIGITAL_INPUT:
 		{
-			m_p_hw_con->getDigitalInputState(m_complete_sequence_map.at(name).at(i).param_string1);
+			m_p_hw_con->getDigitalInputState(m_complete_sequence_map.at(name).at(current_step).param_string1);
 		}break;
 	
 		case SEQ_FUNCTION_TYPE::SWITCH_DIGITAL_OUTPUT:
 		{
-			m_p_hw_con->switchDigitalOutputState(m_complete_sequence_map.at(name).at(i).param_string1);
+			m_p_hw_con->switchDigitalOutputState(m_complete_sequence_map.at(name).at(current_step).param_string1);
 		}break;
 		case SEQ_FUNCTION_TYPE::SET_DIGITAL_OUTPUT:
 		{
-			m_p_hw_con->setDigitalOutputState(m_complete_sequence_map.at(name).at(i).param_int1, m_complete_sequence_map.at(name).at(i).param_string1);
+			m_p_hw_con->setDigitalOutputState(m_complete_sequence_map.at(name).at(current_step).param_int1, m_complete_sequence_map.at(name).at(current_step).param_string1);
 		}break;
 		}
-	}
+		
+
+	} 
 }
 
 
