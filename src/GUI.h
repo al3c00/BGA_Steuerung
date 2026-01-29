@@ -24,10 +24,10 @@ class GUI
 public:
 	GUI(Log* logger, Render* renderer);
 
-	
 	void drawBackGroundColor(int r, int g, int b);
 	
-
+	//@brief Call before drawing anything in the frame
+	void prepareCursor();
 
 	//@brief Function to draw Textures, with the position set in the file: "drawable_objects_positions.txt"
 	//@param x_pos,y_pos Bottom left position of the element on the screen --> 0,0 is the top left corner
@@ -36,12 +36,10 @@ public:
 	//@param texture_name Name of the texture to draw
 	//@param rotation Rotation value of the texture in degrees
 	//@param state Use this function together with HW_CON::getDoubleInputState(), mainly for valves, that have to position sensors (one active when open, one active when closed)
-	void drawVisualElement(int x_pos, int y_pos, int width, int height, int r, int g, int b);
-	void drawVisualElement(int x_pos, int y_pos, int width, int height, std::string texture_name);
-	void drawVisualElement(int x_pos, int y_pos, int width, int height, int rotation, std::string texture_name);
-	void drawVisualElement(std::string pos_object_name,  std::string texture_name);
-	void drawVisualElement(std::string pos_object_name, int rotation, std::string texture_name);
-	void drawVisualElement(std::string pos_object_name, int state);
+	void drawVisualElement(int x_pos, int y_pos, int width, int height, int r, int g, int b, bool is_selectable);
+	void drawVisualElement(int x_pos, int y_pos, int width, int height, std::string texture_name, bool is_selectable);
+	void drawVisualElement(int x_pos, int y_pos, int width, int height, int rotation, std::string texture_name, bool is_selectable);
+	void drawVisualElement(int x_pos, int y_pos, int width, int height, int state, bool is_selectable);
 
 
 	//@brief Function to draw the text in the backbuffer
@@ -64,6 +62,7 @@ public:
 	//@param font Font-variant from collection that should be used
 	void drawList_l(int x_pos, int y_pos, int spacing,  std::vector<std::string> text, std::string font);
 	void drawList_l(int x_pos, int y_pos, int spacing, int width, int height, int scrollpos, std::vector<std::string> text, std::string font);
+	void drawList_l(int x_pos, int y_pos, int spacing, int width, int height, bool scroll_forward, bool scroll_backward, std::vector<std::string> text, std::string font);
 	
 
 	//@brief Function to draw the text in the backbuffer
@@ -76,22 +75,6 @@ public:
 	void drawText_r(int x_pos, int y_pos, int numbers, std::string font);
 	void drawText_r(int x_pos, int y_pos, std::string text, std::string font, int box_r, int box_g, int box_b);
 	
-
-	//@brief Function to write a position (x and y value) of an object that needs frequent texture changing into a map
-	//@param xpos X-Position of the object
-	//@param ypos Y-Position of the object
-	//@param width Width of the object
-	//@param height Height of the object
-	//@param name Name of the object (refer with the same in the function drawPreloadedTextureXYWH)
-	void prepareXYWHPosition(int xpos, int ypos, int width, int height, std::string name);
-
-
-	//@brief Function to write a position (x and y value) of an object that needs frequent texture changing into a map
-	//@brief Loads the given position and size attributes from a text file and stores them into a map
-	//@brief How to write the file: #Object_Name (refer with the same in the function drawPreloadedTextureXYWH) NEWLINE { NEWLINE xposXX,yposYY,wdataWW,hdataHH NEWLINE }
-	//@brief Don't write empty spaces between the bracelets
-	//@param path Path to the file
-	void loadVisualElementsPosition(std::string path);
 
 	//@brief Function to preload textures into a map
 	//@param name Key(name) to refer to the texture
@@ -129,11 +112,11 @@ public:
 	//void TESTDRAWTEXT();
 
 
+
 private:
 
 	//Currently object to draw the cursor around
-	int m_currently_selected_object_for_cursor;
-	int m_ammount_selectable_objects;
+	int m_cursor_pos;
 	bool m_cursor_active;
 
 	Render* m_p_render_instance;
@@ -163,9 +146,9 @@ private:
 	//End Font Handling
 
 
-	//Struct that holds information about the drawn elements.
+	//Struct that holds information about the currently drawn elements by the GUI.
 	//Fill in the information in the "draw" call
-	struct DrawnElements
+	struct VisualElementInfo
 	{
 		std::string name;
 		int xpos;
@@ -173,28 +156,14 @@ private:
 		int width;
 		int height;
 		bool selectable;
-		int nmbr_selectable_object; //Holds the number used by the cursor to address it
+	};
 
-	}m_drawn_elements_list;
-
-	std::vector<DrawnElements> m_drawn_elements_list_vector;
-
-	
-
-
+	std::vector<VisualElementInfo> m_drawn_elements;
+	std::vector<int>m_pos_selectable_objects;//Position of the selectable objects in the m_drawn_elements vector
 	
 	std::map<std::string, SDL_Texture*> m_preloaded_textures_collection;
 	
-	struct Element_Pos
-	{
-		uint16_t xpos;
-		uint16_t ypos;
-		uint16_t width;
-		uint16_t height;
-		int nmbr_selectable_object; //Holds the number used by the cursor to address it
-	}m_element_pos;//Struct to save the element info temporary
-
-	std::map<std::string, Element_Pos> m_loaded_elements_pos;//Map to save the element info while the programm is running. Get infos about a specific object by the name it is called in the .txt file
+	
 
 	SDL_Surface* m_background_surface;
 	SDL_Texture* m_background_texture;

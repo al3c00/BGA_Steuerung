@@ -23,16 +23,12 @@ GUI::GUI(Log* logger, Render* renderer)
 	m_background_rect.w = m_p_render_instance->getDisplaySize().w;
 	m_background_rect.h = m_p_render_instance->getDisplaySize().h;
 
-	m_currently_selected_object_for_cursor = 0;
-	m_ammount_selectable_objects = 0;
+	m_cursor_pos = 0;
 	m_cursor_active = false;
 
 	m_scroll_position = 0;
 
 }
-
-
-
 
 
 void GUI::drawBackGroundColor(int r, int g, int b)
@@ -41,9 +37,15 @@ void GUI::drawBackGroundColor(int r, int g, int b)
 	SDL_RenderFillRect(m_p_render_instance->getRenderer(), &m_background_rect);
 }
 
+void GUI::prepareCursor()
+{
+	m_drawn_elements.clear();
+	m_pos_selectable_objects.clear();
+}
 
 
-void GUI::drawVisualElement(int x_pos, int y_pos, int width, int height,  int r, int g, int b)
+
+void GUI::drawVisualElement(int x_pos, int y_pos, int width, int height,  int r, int g, int b, bool is_selectable)
 {
 	SDL_Rect element_rect;
 	element_rect.x = x_pos;
@@ -54,9 +56,14 @@ void GUI::drawVisualElement(int x_pos, int y_pos, int width, int height,  int r,
 	SDL_SetRenderDrawColor(m_p_render_instance->getRenderer(), r, g, b,225);
 	SDL_RenderFillRect(m_p_render_instance->getRenderer(), &element_rect);
 	SDL_RenderDrawRect(m_p_render_instance->getRenderer(), &element_rect);
+
+
+
+	m_drawn_elements.push_back({ "", x_pos, y_pos, width, height, is_selectable});
 }
 
-void GUI::drawVisualElement(int x_pos, int y_pos, int width, int height,  std::string name)
+
+void GUI::drawVisualElement(int x_pos, int y_pos, int width, int height,  std::string name, bool is_selectable)
 {
 	SDL_Rect draw_rect{ 0 };
 	draw_rect.x = x_pos;
@@ -67,9 +74,11 @@ void GUI::drawVisualElement(int x_pos, int y_pos, int width, int height,  std::s
 	{
 		m_p_logger->writeLog(LogLevel::ERROR, m_log_origin + " SDL_RenderCopy" + " | Object: " + name, SDL_GetError());
 	}
+
+	m_drawn_elements.push_back({ name, x_pos, y_pos, width, height, is_selectable });
 }
 
-void GUI::drawVisualElement(int x_pos, int y_pos, int width, int height,  int rotation, std::string name)
+void GUI::drawVisualElement(int x_pos, int y_pos, int width, int height,  int rotation, std::string name, bool is_selectable)
 {
 	SDL_Rect draw_rect;
 	draw_rect.x = x_pos;
@@ -80,63 +89,61 @@ void GUI::drawVisualElement(int x_pos, int y_pos, int width, int height,  int ro
 	{
 		m_p_logger->writeLog(LogLevel::ERROR, m_log_origin + " SDL_RenderCopyEx" + " | Object: " + name, SDL_GetError());
 	}
+	m_drawn_elements.push_back({ name, x_pos, y_pos, width, height, is_selectable });
+
 }
 
-void GUI::drawVisualElement(std::string object_name, std::string texture_name)
+void GUI::drawVisualElement(int x_pos, int y_pos, int width, int height, int state, bool is_selectable)
 {
-	
-	drawVisualElement(m_loaded_elements_pos.at(object_name).xpos, m_loaded_elements_pos.at(object_name).ypos, m_loaded_elements_pos.at(object_name).width,
-		m_loaded_elements_pos.at(object_name).height, texture_name);
-}
-
-void GUI::drawVisualElement(std::string object_name, int rotation, std::string texture_name)
-{
-	drawVisualElement(m_loaded_elements_pos.at(object_name).xpos, m_loaded_elements_pos.at(object_name).ypos, m_loaded_elements_pos.at(object_name).width,
-		m_loaded_elements_pos.at(object_name).height, rotation, texture_name);
-}
-
-void GUI::drawVisualElement(std::string object_name, int state)
-{
-	if (state == 0)
-	{
-		drawVisualElement(m_loaded_elements_pos.at(object_name).xpos, m_loaded_elements_pos.at(object_name).ypos, m_loaded_elements_pos.at(object_name).width,
-			m_loaded_elements_pos.at(object_name).height, "Schieber_Geschlossen");
-	}
-	if (state == 1)
-	{
-		drawVisualElement(m_loaded_elements_pos.at(object_name).xpos, m_loaded_elements_pos.at(object_name).ypos, m_loaded_elements_pos.at(object_name).width,
-			m_loaded_elements_pos.at(object_name).height, "Schieber_Offen");
-	}
-	if (state == 2)
-	{
-		drawVisualElement(m_loaded_elements_pos.at(object_name).xpos, m_loaded_elements_pos.at(object_name).ypos, m_loaded_elements_pos.at(object_name).width,
-			m_loaded_elements_pos.at(object_name).height, "Schieber_Unbekannt");
-	}
 
 }
+
+
 
 void GUI::drawCursor()
 {
 	if (m_cursor_active)
 	{
-		for (auto const& i : m_loaded_elements_pos)
+
+		
+
+		for (int i = 0; i < m_drawn_elements.size(); i++)
 		{
-			if (i.second.nmbr_selectable_object == m_currently_selected_object_for_cursor)
+			if (m_drawn_elements.at(i).selectable)
 			{
-				SDL_Rect cursor_rect;
-				cursor_rect.x = i.second.xpos - 1;
-				cursor_rect.y = i.second.ypos - 1;
-				cursor_rect.w = i.second.width + 2;
-				cursor_rect.h = i.second.height + 2;
-
-				SDL_SetRenderDrawColor(m_p_render_instance->getRenderer(), 255, 0, 0, 150);
-				SDL_RenderFillRect(m_p_render_instance->getRenderer(), &cursor_rect);
-				SDL_RenderDrawRect(m_p_render_instance->getRenderer(), &cursor_rect);
-
-				//std::cout << "Draw cursor on object nmbr: " << m_currently_selected_object_for_cursor << std::endl;
-
+				m_pos_selectable_objects.push_back(i);
 			}
 		}
+
+		if (!m_pos_selectable_objects.empty())
+		{
+
+			if (m_cursor_pos > m_pos_selectable_objects.size() - 1)
+			{
+				m_cursor_pos = m_pos_selectable_objects.size() - 1;
+			}
+
+			if (m_cursor_pos < 0)
+			{
+				m_cursor_pos = 0;
+			}
+
+
+
+			SDL_Rect cursor_rect;
+			cursor_rect.x = m_drawn_elements.at(m_pos_selectable_objects.at(m_cursor_pos)).xpos - 1;
+			cursor_rect.y = m_drawn_elements.at(m_pos_selectable_objects.at(m_cursor_pos)).ypos - 1;
+			cursor_rect.w = m_drawn_elements.at(m_pos_selectable_objects.at(m_cursor_pos)).width + 2;
+			cursor_rect.h = m_drawn_elements.at(m_pos_selectable_objects.at(m_cursor_pos)).height + 2;
+
+			SDL_SetRenderDrawColor(m_p_render_instance->getRenderer(), 255, 0, 0, 150);
+			SDL_RenderFillRect(m_p_render_instance->getRenderer(), &cursor_rect);
+			SDL_RenderDrawRect(m_p_render_instance->getRenderer(), &cursor_rect);
+
+			//std::cout << "Draw cursor on object nmbr: " << m_currently_selected_object_for_cursor << std::endl;
+
+		}
+		
 	}
 
 	
@@ -156,15 +163,7 @@ void GUI::moveCursor(int direction)
 {
 	if(direction)
 	{
-		m_currently_selected_object_for_cursor += direction;
-		if (m_currently_selected_object_for_cursor < 0)
-		{
-			m_currently_selected_object_for_cursor = 0;
-		}
-		if (m_currently_selected_object_for_cursor > m_ammount_selectable_objects)
-		{
-			m_currently_selected_object_for_cursor = m_ammount_selectable_objects;
-		}
+		m_cursor_pos += direction;
 		//std::cout << "moved cursor: " << direction << " new position: " << m_currently_selected_object_for_cursor << std::endl;
 	}
 
@@ -406,8 +405,94 @@ void GUI::drawList_l(int x_pos, int y_pos, int spacing, int width, int height, i
 
 
 	}
-	drawText_l(x_pos, y_pos + height, "Benutze Drehrad zum Scrollen!", "ARIAL_Black");
 
+}
+
+void GUI::drawList_l(int x_pos, int y_pos, int spacing, int width, int height, bool scroll_forward, bool scroll_backward, std::vector<std::string> text, std::string font)
+{
+	//The text that should be displayed on one line
+	std::string line_text;
+
+	int vertical_text_pos = y_pos + 5;//The y-position of the text line. Lower the first line by 5 pixels to create distance
+
+	SDL_Rect rect_box;
+	rect_box.x = x_pos;
+	rect_box.y = y_pos;
+	rect_box.w = width;
+	rect_box.h = height;
+
+	if (scroll_forward)
+	{
+		m_scroll_position++;
+	}
+	else if (scroll_backward)
+	{
+		m_scroll_position--;
+	}
+	
+
+	if (m_scroll_position < 0)
+	{
+		m_scroll_position = 0;
+	}
+
+	if (m_scroll_position > text.size() - 1)
+	{
+		m_scroll_position = text.size() - 1;
+	}
+
+	SDL_SetRenderDrawColor(m_p_render_instance->getRenderer(), 150, 150, 150, 100);
+	SDL_RenderFillRect(m_p_render_instance->getRenderer(), &rect_box);
+	SDL_RenderDrawRect(m_p_render_instance->getRenderer(), &rect_box);
+
+
+	for (int i = 0 + m_scroll_position; i < text.size(); i++)
+	{
+		line_text.clear();
+		line_text = std::to_string(i) + ")" + text.at(i);
+
+		int nmbr_of_characters = line_text.length();
+
+		SDL_Rect rect_text;
+
+		rect_text.x = x_pos;
+		rect_text.y = vertical_text_pos;
+
+		int symbol_width = 0;
+		int symbol_height = 0;
+
+		for (int i = 0; i < nmbr_of_characters; i++)
+		{
+			char single_symbol = line_text.at(i);
+			//std::cout << "Single symbol: " <<single_symbol << std::endl;
+
+			if (SDL_QueryTexture(s_m_font_collection.at(font).at(single_symbol), NULL, NULL, &symbol_width, &symbol_height) < 0)
+			{
+				m_p_logger->writeLog(LogLevel::ERROR, m_log_origin + " SDL_QUERY_TEXTURE", SDL_GetError());
+			}
+
+			rect_text.w = symbol_width;
+			rect_text.h = symbol_height;
+
+			if (SDL_RenderCopy(m_p_render_instance->getRenderer(), s_m_font_collection.at(font).at(single_symbol), NULL, &rect_text) < 0)
+			{
+				std::cout << "Error SDL_RenderCopy" << std::endl;
+				m_p_logger->writeLog(LogLevel::ERROR, m_log_origin + " DRAW-TEXT__SDL_RENDER_COPY", SDL_GetError());
+			}
+
+
+			rect_text.x += rect_text.w;
+		}
+
+		if (vertical_text_pos > x_pos + height)
+		{
+			break;
+		}
+
+		vertical_text_pos += spacing;
+
+
+	}
 }
 
 
@@ -540,141 +625,7 @@ void GUI::drawText_r(int x_pos, int y_pos, std::string text, std::string font, i
 
 }
 
-void GUI::prepareXYWHPosition(int xpos, int ypos, int width, int height, std::string name)
-{
-	m_element_pos.xpos = xpos;
-	m_element_pos.ypos = ypos;
-	m_element_pos.width = width;
-	m_element_pos.height = height;
 
-	m_loaded_elements_pos.insert({ name, m_element_pos});
-}
-
-void GUI::loadVisualElementsPosition(std::string path)
-{
-	std::string temp;
-	std::string single_character;
-	std::string object_name;
-
-	enum struct VARIANTS{XPOS = 0, YPOS = 1, WDATA = 2, HDATA = 3, SELECTABLE = 4} variants;
-
-	std::ifstream object_position_file(m_getProjectDirPath() + path);
-	object_position_file.seekg(0, object_position_file.end);
-	int length = object_position_file.tellg();
-	object_position_file.seekg(0, object_position_file.beg);
-
-	char* buffer = new char[length];
-
-	m_p_logger->writeLog(LogLevel::INFO, m_log_origin + " LOAD_XYWH_DATA", "Reading: " + std::to_string(length) + " characters");
-
-	object_position_file.read(buffer, length);
-
-	object_position_file.close();
-
-	//Unsafe, file could be corrupted!!
-	for (int i = 0; i < length; i++)
-	{
-		single_character = buffer[i];
-
-		if (single_character != "#" && single_character != "{" && single_character != "}" && single_character != "," && single_character != "\n" && single_character != "\r")
-		{
-			temp.append(single_character);
-		}
-
-		//Check if a variant code word had been read (xpos,ypos,wdata,hdata,sel). If yes clear string and prepare to read and store actual data in struct
-		{
-			if (temp == "xpos")
-			{
-				variants = VARIANTS::XPOS;
-				temp.clear();
-			}
-			else if (temp == "ypos")
-			{
-				variants = VARIANTS::YPOS;
-				temp.clear();
-			}
-			else if (temp == "wdata")
-			{
-				variants = VARIANTS::WDATA;
-				temp.clear();
-			}
-			else if (temp == "hdata")
-			{
-				variants = VARIANTS::HDATA;
-				temp.clear();
-			}
-			else if (temp == "sel")
-			{
-				variants = VARIANTS::SELECTABLE;
-				temp.clear();
-			}
-		}
-
-		if (single_character == "{")
-		{
-			object_name = temp;
-			temp.clear();
-		}
-		if (single_character == ",")
-		{
-			switch (variants)
-			{
-			case VARIANTS::XPOS:
-			{
-				m_element_pos.xpos = std::stoi(temp);
-				temp.clear();
-			}break;
-			case VARIANTS::YPOS:
-			{
-				m_element_pos.ypos = std::stoi(temp);
-				temp.clear();
-			}break;
-			case VARIANTS::WDATA:
-			{
-				m_element_pos.width = std::stoi(temp);
-				temp.clear();
-			}break;
-			case VARIANTS::HDATA: 
-			{
-				m_element_pos.height = std::stoi(temp);
-				temp.clear();
-			}break;
-			case VARIANTS::SELECTABLE:
-			{
-				if (std::stoi(temp) == 1)
-				{
-					m_element_pos.nmbr_selectable_object = m_ammount_selectable_objects;
-					m_ammount_selectable_objects++;
-				}
-				else
-				{
-					m_element_pos.nmbr_selectable_object = -1;
-				}
-			}break;
-			default:
-				break;
-			}
-		}
-		if (single_character == "}")//The last number doesn't have a comma following, so it has to be read when the bracelet is found
-		{
-			if (std::stoi(temp) == 1)
-			{
-				m_element_pos.nmbr_selectable_object = m_ammount_selectable_objects;
-				m_ammount_selectable_objects++;
-			}
-			else
-			{
-				m_element_pos.nmbr_selectable_object = -1;
-			}
-			temp.clear();
-			m_loaded_elements_pos.insert({ object_name, m_element_pos });
-		}
-		
-
-	}
-
-	std::cout << "Finished loading XYWH pos" << std::endl;
-}
 
 void GUI::loadTexture(std::string name, std::string path)
 {
