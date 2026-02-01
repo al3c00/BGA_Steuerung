@@ -29,6 +29,13 @@ public:
 
 	void loadSeq(std::string path);
 
+	//@brief Function who checks how many sequences are in the folder and loads them into a vector
+	//@param path Path to the sequence folder, not the individual sequence files
+	void loadSequences(std::string path);
+
+	//@brief Function to start all loaded sequences at once. Call at starting up the programm after loading the sequences.
+	void startAllSequences();
+
 	void startSequence(std::string name);
 
 	//@brief Gets the step of the execution the asked sequence is in right now
@@ -69,13 +76,14 @@ private:
 		std::string param_string1, param_string2;
 	};
 
-	//A vector that holds all the steps/functions from a complete sequence
-	//All vectors are copied into a map, where they can be addressed by a string-key
-	std::vector<Seq_Part_Info>m_complete_sequence;
-
 	std::vector<std::string> m_loaded_sequences_names;//Used mainly to iterate throug the map "m_complete_sequence_map" while getting the functions as a list in getSequenceFunctions
 	std::map<std::string, std::vector<Seq_Part_Info>>m_complete_sequence_map;//Map that holds ALL the loades sequences. The sequences can be addressed by their string key (name)
 
+	//!
+	std::vector<std::vector<Seq_Part_Info>>m_sequences;//Vector, that holds the loades sequences. 
+	std::map<int, std::string>m_sequence_names;//Map to assign the names of sequence to her position in the vector
+	//!
+	
 	//To not having to reconstruct the vector every frame, just do it when the functions of a new sequence are asked
 	std::vector<std::string> m_sequence_return_vector;
 	std::string m_sequence_return_name;
@@ -94,6 +102,13 @@ private:
 
 
 	void m_playSequence(std::string name, std::map<std::string, RunningSeqInfo>& running_sequences);
+
+	//@brief Start a specific sequence
+	//@param name Name of the sequence
+	//@param v_seq Reference to the vector of all loaded sequences
+	//@param seq_nmbr Position of the sequence wished to start in the vector
+	//@param info_map Reference to the map that hold the information about all running and stopped sequences
+	void m_playSequenceN(std::string name, std::vector<std::vector<Seq_Part_Info>>& v_seq, int seq_nmbr , std::map<std::string, RunningSeqInfo>& info_map);
 
 	std::string m_log_origin;
 	std::string m_getProjectDirPath();

@@ -70,10 +70,8 @@ int main()
 	
 
 
-	sqh.loadSeq("/configs/Sequences.txt");
-	sqh.startSequence("Sequence_wait_until");
-	sqh.startSequence("Sequence2");
-	sqh.startSequence("Sequence3");
+	sqh.loadSequences("/sequences");
+	sqh.startAllSequences();
 	
 	
 

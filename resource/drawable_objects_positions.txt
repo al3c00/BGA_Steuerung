@@ -20,11 +20,11 @@ xpos263,ypos64,wdata25,hdata25,sel1
 }
 #Schieber_Schweineguelle_Status
 {
-xpos213,ypos198,wdata20,hdata20,sel1
+xpos213,ypos198,wdata20,hdata20,sel0
 }
 #Schieber_Mischer_Status
 {
-xpos261,ypos145,wdata20,hdata20,sel1
+xpos261,ypos145,wdata20,hdata20,sel0
 }
 #Schieber_Probenahme_Status
 {
@@ -46,6 +46,15 @@ xpos411,ypos716,wdata20,hdata20,sel1
 {
 xpos450,ypos659,wdata20,hdata20,sel1
 }
+#Sequence_Play_Pause
+{
+xpos370,ypos120,wdata64,hdata64,sel1
+}
+#Sequence_Reload
+{
+xpos470,ypos180,wdata64,hdata64,sel1
+}
+
 
 
 
