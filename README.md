@@ -20,7 +20,11 @@ Das Programm lädt Sequenzen, die zu einem bestimmten Zeitpunkt abgespielt werde
 Es können folgende Funktionen verwendet werden:
 |Funktionsname|Beschrieb|Parameter_int1|Parameter_int2|Parameter_string1|Parameter_string2|
 |---|---|---|---|---|---|
-|WAIT|Stoppt die Ausführung der Sequenz indem der Thread mittels std::this_thread::sleep_for angehalten wird|Wartezeit in Millisekunden (ms)|-|-|-|
+|WAIT_MS|Stoppt die Ausführung der Sequenz indem der Thread mittels std::this_thread::sleep_for angehalten wird|Wartezeit in Millisekunden int|-|-|-|
+|WAIT_S|Stoppt die Ausführung der Sequenz indem der Thread mittels std::this_thread::sleep_for angehalten wird|Wartezeit in Sekunden int|-|-|-|
+|WAIT_MIN|Stoppt die Ausführung der Sequenz indem der Thread mittels std::this_thread::sleep_for angehalten wird|Wartezeit in Minuten int|-|-|-|
+|WAIT_H|Stoppt die Ausführung der Sequenz indem der Thread mittels std::this_thread::sleep_for angehalten wird|Wartezeit in Stunden int|-|-|-|
+|WAIT_UNTIL|Stoppt die Ausführung der Sequenz bis zu einer gewissen Tageszeit (HHMM). Der Thread wird mit std::this_thread::sleep_for angehalten und es wird alle 30 Sekunden überprüft, ob die Uhrzeit erreicht worden ist|Tageszeit Stunde int|Tageszeit Minute int|-|-|
 |JUMP_TO|Springt zu einer bestimmten Position in der Sequenz und fährt dort weiter|Zielposition (0 bis n)|-|-|-|
 |PROGRESS_IF_1|Die Ausführung der Sequenz wird angehalten bis eine bestimmte Bedingung erfüllt ist an **einem** Input erfüllt ist|int_Zustand, der zu erfüllen ist|-|Input, der abgefragt wird|-|
 |PROGRESS_IF_2|Die Ausführung der Sequenz wird angehalten bis eine bestimmte Bedingung erfüllt ist an **zwei** Inputs erfüllt ist (siehe HW_Con::getDoubleInputState|int_Zustand, der zu erfüllen ist|-|Input, der abgefragt wird|Input, der abgefragt wird|
