@@ -259,9 +259,13 @@ int main()
 					//sequence_overview.drawVisualElement(406, 726, 32, 32, "Dreieck_Rechts");//xpos = 480-10-64, ypos = 800-10-64
 
 					sequence_overview.drawVisualElement(365, 70, 110, 60, 200, 200, 200, false);
-					sequence_overview.drawText_l(370, 75, "Sequence1: " + std::to_string(sqh.getExecutionStep("Sequence_wait_until")), "ARIAL_Black");
-					sequence_overview.drawText_l(370, 95, "Sequence2: " + std::to_string(sqh.getExecutionStep("Sequence2")), "ARIAL_Black");
-					sequence_overview.drawText_l(370, 115, "Sequence3: " + std::to_string(sqh.getExecutionStep("Sequence3")), "ARIAL_Black");
+					
+
+					for (int i = 0; i < sqh.getAmmountOfLoadedSequences(); i++)
+					{
+						//Draw text for every loaded sequence. Offset the y-position for every sequence
+						sequence_overview.drawText_l(370, 75 + i *20, "Sequence " + std::to_string(i) + ": " + std::to_string(sqh.getExecutionStep(sqh.getSequenceName(i))), "ARIAL_Black");
+					}
 
 					sequence_overview.drawText_l(370, 135, "Pausiere: " , "ARIAL_Black");
 					sequence_overview.drawVisualElement(370, 170, 32, 32, "Sequenz_Play_Pause", false);

@@ -27,7 +27,6 @@ public:
 
 	void saveSequence();
 
-	void loadSeq(std::string path);
 
 	//@brief Function who checks how many sequences are in the folder and loads them into a vector
 	//@param path Path to the sequence folder, not the individual sequence files
@@ -36,7 +35,6 @@ public:
 	//@brief Function to start all loaded sequences at once. Call at starting up the programm after loading the sequences.
 	void startAllSequences();
 
-	void startSequence(std::string name);
 
 	//@brief Gets the step of the execution the asked sequence is in right now
 	//@param name The name of the sequence. The same as in the Sequences.txt file, without the #
@@ -45,7 +43,6 @@ public:
 	//@brief Gets the individual functions of a sequence stored in a vector
 	//@param name name of the sequence as written in the file without #
 	//@param number Gets the sequence stored in NUMBER pos in map..use to switch through all the sequences without using their names
-	std::vector<std::string> getSequenceFunctions(std::string name);
 	std::vector<std::string> getSequenceFunctions(int number);
 
 
@@ -76,19 +73,10 @@ private:
 		std::string param_string1, param_string2;
 	};
 
-	std::vector<std::string> m_loaded_sequences_names;//Used mainly to iterate throug the map "m_complete_sequence_map" while getting the functions as a list in getSequenceFunctions
-	std::map<std::string, std::vector<Seq_Part_Info>>m_complete_sequence_map;//Map that holds ALL the loades sequences. The sequences can be addressed by their string key (name)
-
-	//!
+	
 	std::vector<std::vector<Seq_Part_Info>>m_sequences;//Vector, that holds the loades sequences. 
 	std::map<int, std::string>m_sequence_names;//Map to assign the names of sequence to her position in the vector
-	//!
 	
-	//To not having to reconstruct the vector every frame, just do it when the functions of a new sequence are asked
-	std::vector<std::string> m_sequence_return_vector;
-	std::string m_sequence_return_name;
-
-	int m_sequence_return_number;
 	
 	//Struct with informations about the running sequences
 	struct RunningSeqInfo
@@ -99,9 +87,9 @@ private:
 
 	std::map<std::string, RunningSeqInfo>m_running_sequences_info;//Map that holds information about all the running threads. The key is the name of the sequence
 
+	std::vector<std::string>m_sequence_return_vector;
+	int m_sequence_return_number;
 
-
-	void m_playSequence(std::string name, std::map<std::string, RunningSeqInfo>& running_sequences);
 
 	//@brief Start a specific sequence
 	//@param name Name of the sequence
