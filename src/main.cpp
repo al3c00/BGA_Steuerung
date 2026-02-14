@@ -27,7 +27,7 @@ int main()
 		std::cout << SDL_GetError() << std::endl;
 	}
 
-	int gui_state = 1; //used to iterate over the different GUIs
+	int gui_state = 2; //used to iterate over the different GUIs
 	int nmbr_of_guis = 3;//Ammount of used guis 
 
 	//Initialize IMG
@@ -93,6 +93,9 @@ int main()
 	sequence_overview.loadTexture("Sequenz_Reload", "/resource/reload.png");
 
 	io_overview.loadFont("ARIAL_Black", "/fonts/arial.ttf", 0, 0, 0);
+	io_overview.loadTexture("IO_Liste", "/resource/schema_IO_v1.png");
+	io_overview.loadTexture("IO_Aktiv", "/resource/stromkreis_geschlossen_gruen.png");
+	io_overview.loadTexture("IO_Inaktiv", "/resource/stromkreis_offen_rot.png");
 
 
 	std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
@@ -119,7 +122,8 @@ int main()
 	int rotation = 0;
 	int asked_sequence = 0;
 	int scrollpos = 0;
-
+	int y_corr = 0;
+	bool io_state = false;
 
 	do
 	{
@@ -220,6 +224,7 @@ int main()
 
 				}
 
+				//Sequence overview
 				else if (gui_state == 1)
 				{
 					if (hw->getEncoderPush())
@@ -274,6 +279,7 @@ int main()
 					
 				}
 
+				//io_overview
 				else if (gui_state == 2)
 				{
 					if (hw->getEncoderPush())
@@ -284,6 +290,7 @@ int main()
 
 
 					io_overview.drawBackGroundColor(225, 225, 225);
+					io_overview.drawVisualElement(0, 0, 480, 800, "IO_Liste", false);
 
 					//Info Elements: Time and date, FPS, ms/frame
 					io_overview.drawVisualElement(0, 0, 480, 30, 245, 245, 245, false);
@@ -294,18 +301,19 @@ int main()
 					io_overview.drawText_l(10, 40, "Digitale Inputs: ", "ARIAL_Black");
 					io_overview.drawText_l(300, 40, "Digitale Outputs: ", "ARIAL_Black");
 
-					io_overview.drawVisualElement(295, 595, 100, 55, 200, 200, 200, false);
-					io_overview.drawText_l(300, 600, "Rot = Inaktiv", "ARIAL_Black", 255, 0, 0);
-					io_overview.drawText_l(300, 625, "Gruen = Aktiv", "ARIAL_Black", 0, 255, 0);
+					/*io_overview.drawVisualElement(295, 725, 100, 55, 200, 200, 200, false);
+					io_overview.drawText_l(300, 730, "Rot = Inaktiv", "ARIAL_Black", 255, 0, 0);
+					io_overview.drawText_l(300, 755, "Gruen = Aktiv", "ARIAL_Black", 0, 255, 0);*/
 
-					bool io_state = false;
-					int y_corr = 0;
+					
+					
+					
 
 					for (int i = 0; i < 24; i++)
 					{
 						std::string input_name = "D_In_" + std::to_string(i);
 						io_state = hw->getDigitalInputState(input_name);
-						io_overview.drawText_l(10, 80 + y_corr, input_name + (i < 10 ? ":  " : ": ") + std::to_string(io_state), "ARIAL_Black", (io_state ? 255 : 0), (io_state ? 0 : 255), 0);
+						io_overview.drawVisualElement(120, 83 + y_corr, 80, 15, (io_state ? "IO_Inaktiv" : "IO_Aktiv"), false);
 						y_corr += 30;
 
 					}
@@ -317,12 +325,12 @@ int main()
 					{
 						std::string output_name = "D_Out_" + std::to_string(i);
 						io_state = hw->getDigitalOutputState(output_name);
-						io_overview.drawText_l(300, 80 + y_corr, output_name + (i < 10 ? ":  " : ": ") +  std::to_string(io_state), "ARIAL_Black", (io_state ? 0 : 255), (io_state ? 255 : 0), 0);
+						io_overview.drawVisualElement(370, 83 + y_corr, 80, 15, (io_state ? "IO_Aktiv" : "IO_Inaktiv"), false);
 						y_corr += 30;
 
 					}
 					
-
+					y_corr = 0;
 
 				}
 
