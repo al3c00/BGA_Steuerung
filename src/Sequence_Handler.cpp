@@ -327,6 +327,11 @@ std::vector<std::string> Sequence_Handler::getSequenceFunctions(int number)
 
 }
 
+int Sequence_Handler::getSequenceStepAmmount(int number)
+{
+	return m_sequences.at(number).size();
+}
+
 std::string Sequence_Handler::getSequenceName(int number)
 {
 	if (number > m_sequences.size() - 1)

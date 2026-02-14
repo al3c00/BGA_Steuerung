@@ -45,6 +45,9 @@ public:
 	//@param number Gets the sequence stored in NUMBER pos in map..use to switch through all the sequences without using their names
 	std::vector<std::string> getSequenceFunctions(int number);
 
+	//@brief Gets the ammount of total function steps --> length of the sequence
+	//@param number Gets the sequence stored in NUMBER pos in map..use to switch through all the sequences without using their names
+	int getSequenceStepAmmount(int number);
 
 	//@brief Use together with getSequenceFunctions(int number)
 	std::string getSequenceName(int number);

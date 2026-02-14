@@ -289,7 +289,7 @@ void GUI::drawList_l(int x_pos, int y_pos, int spacing,  std::vector<std::string
 	for (int i = 0; i < text.size(); i++)
 	{
 		line_text.clear();
-		line_text = std::to_string(i) + ")" + text.at(i);
+		line_text = text.at(i);
 
 		int nmbr_of_characters = line_text.length();
 
@@ -396,12 +396,14 @@ void GUI::drawList_l(int x_pos, int y_pos, int spacing, int width, int height, i
 			rect_text.x += rect_text.w;
 		}
 
-		if (vertical_text_pos > x_pos + height)
+		vertical_text_pos += spacing;
+
+		if (vertical_text_pos > y_pos + height - 20)
 		{
 			break;
 		}
 
-		vertical_text_pos += spacing;
+		
 
 
 	}
@@ -484,12 +486,14 @@ void GUI::drawList_l(int x_pos, int y_pos, int spacing, int width, int height, b
 			rect_text.x += rect_text.w;
 		}
 
-		if (vertical_text_pos > x_pos + height)
+		vertical_text_pos += spacing;
+
+		if (vertical_text_pos > y_pos + height - 20)
 		{
 			break;
 		}
 
-		vertical_text_pos += spacing;
+		
 
 
 	}

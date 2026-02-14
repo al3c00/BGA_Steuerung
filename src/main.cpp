@@ -27,7 +27,7 @@ int main()
 		std::cout << SDL_GetError() << std::endl;
 	}
 
-	int gui_state = 2; //used to iterate over the different GUIs
+	int gui_state = 1; //used to iterate over the different GUIs
 	int nmbr_of_guis = 3;//Ammount of used guis 
 
 	//Initialize IMG
@@ -87,6 +87,7 @@ int main()
 
 
 	sequence_overview.loadFont("ARIAL_Black", "/fonts/arial.ttf", 0, 0, 0);
+	sequence_overview.loadTexture("Seq_Liste", "/resource/Sequenzuebersicht.png");
 	sequence_overview.loadTexture("Dreieck_Rechts", "/resource/dreieck_rechts.png");
 	sequence_overview.loadTexture("Dreieck_Links", "/resource/dreieck_links.png");
 	sequence_overview.loadTexture("Sequenz_Play_Pause", "/resource/play_pause.png");
@@ -243,6 +244,8 @@ int main()
 					}
 
 					sequence_overview.drawBackGroundColor(225, 225, 225);
+					sequence_overview.drawVisualElement(0, 0, 480, 800, "Seq_Liste", false);
+
 
 					//Info Elements: Time and date, FPS, ms/frame
 					sequence_overview.drawVisualElement(0, 0, 480, 30, 245, 245, 245, false);
@@ -250,30 +253,25 @@ int main()
 					sequence_overview.drawText_r(473, 9, "Time(ms)/frame: " + std::to_string((int)total_time_last_frame.count()), "ARIAL_Black");
 					sequence_overview.drawText_l(7, 9, str_current_time, "ARIAL_Black");
 
-					//Sequenzname
-					sequence_overview.drawText_l(10, 40, "Angezeigte Sequenz: " + sqh.getSequenceName(asked_sequence), "ARIAL_Black");
-					//Sequenznummer
-					sequence_overview.drawText_l(350, 40, std::to_string(asked_sequence + 1) + " / " + std::to_string(sqh.getAmmountOfLoadedSequences()), "ARIAL_Black", 140, 140, 140);
+					//Sequenzinfo
+					sequence_overview.drawText_l(30, 105, sqh.getSequenceName(asked_sequence) + "  |  Position: " + std::to_string(sqh.getExecutionStep(sqh.getSequenceName(asked_sequence))) + " / Anzahl Schritte: " + std::to_string(sqh.getSequenceStepAmmount(asked_sequence)) + "", "ARIAL_Black");
+
+					//Sequenzanzahl
+					sequence_overview.drawText_l(367, 105, std::to_string(sqh.getAmmountOfLoadedSequences()), "ARIAL_Black");
 
 
-					sequence_overview.drawList_l(10, 100, 22, 350, 630, hw->getButton3Press(), hw->getButton4Press(), sqh.getSequenceFunctions(asked_sequence), "ARIAL_Black");
+					sequence_overview.drawList_l(23, 137, 22, 270, 648, hw->getButton3Press(), hw->getButton4Press(), sqh.getSequenceFunctions(asked_sequence), "ARIAL_Black");
 
-					sequence_overview.drawText_l(10, 60, "Sequenzen durchschalten: Taste 2", "ARIAL_Black");
-					
-					//sequence_overview.drawVisualElement(10, 726, 32, 32, "Dreieck_Links");
-					//sequence_overview.drawVisualElement(406, 726, 32, 32, "Dreieck_Rechts");//xpos = 480-10-64, ypos = 800-10-64
-
-					sequence_overview.drawVisualElement(365, 70, 110, 60, 200, 200, 200, false);
-					
 
 					for (int i = 0; i < sqh.getAmmountOfLoadedSequences(); i++)
 					{
 						//Draw text for every loaded sequence. Offset the y-position for every sequence
-						sequence_overview.drawText_l(370, 75 + i *20, "Sequence " + std::to_string(i) + ": " + std::to_string(sqh.getExecutionStep(sqh.getSequenceName(i))), "ARIAL_Black");
+						/*sequence_overview.drawText_l(305, 160 + i* 20, "Sequence " + std::to_string(i) + ": " + std::to_string(sqh.getExecutionStep(sqh.getSequenceName(i))), "ARIAL_Black");
+						sequence_overview.drawText_l(305, 160 + i *20, "Sequence " + std::to_string(i) + ": " + std::to_string(sqh.getExecutionStep(sqh.getSequenceName(i))), "ARIAL_Black");*/
+
+						sequence_overview.drawList_l(367, 160+ i*40, 20, { sqh.getSequenceName(i), std::to_string(sqh.getExecutionStep(sqh.getSequenceName(i)))}, "ARIAL_Black");
 					}
 
-					sequence_overview.drawText_l(370, 135, "Pausiere: " , "ARIAL_Black");
-					sequence_overview.drawVisualElement(370, 170, 32, 32, "Sequenz_Play_Pause", false);
 
 					sequence_overview.drawCursor();
 					
