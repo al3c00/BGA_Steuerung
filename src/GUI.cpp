@@ -400,6 +400,7 @@ void GUI::drawList_l(int x_pos, int y_pos, int spacing, int width, int height, i
 
 		if (vertical_text_pos > y_pos + height - 20)
 		{
+			drawText_l(x_pos + width / 2 - 20, vertical_text_pos, "==SCROLL==", "ARIAL_Black");
 			break;
 		}
 
@@ -410,7 +411,7 @@ void GUI::drawList_l(int x_pos, int y_pos, int spacing, int width, int height, i
 
 }
 
-void GUI::drawList_l(int x_pos, int y_pos, int spacing, int width, int height, bool scroll_forward, bool scroll_backward, std::vector<std::string> text, std::string font)
+void GUI::drawList_l(int x_pos, int y_pos, int spacing, int width, int height, bool scroll_forward, bool scroll_backward, std::vector<std::string> text, std::string font, bool has_background)
 {
 	//The text that should be displayed on one line
 	std::string line_text;
@@ -443,10 +444,12 @@ void GUI::drawList_l(int x_pos, int y_pos, int spacing, int width, int height, b
 		m_scroll_position = text.size() - 1;
 	}
 
-	SDL_SetRenderDrawColor(m_p_render_instance->getRenderer(), 150, 150, 150, 100);
-	SDL_RenderFillRect(m_p_render_instance->getRenderer(), &rect_box);
-	SDL_RenderDrawRect(m_p_render_instance->getRenderer(), &rect_box);
-
+	if (has_background)
+	{
+		SDL_SetRenderDrawColor(m_p_render_instance->getRenderer(), 150, 150, 150, 100);
+		SDL_RenderFillRect(m_p_render_instance->getRenderer(), &rect_box);
+		SDL_RenderDrawRect(m_p_render_instance->getRenderer(), &rect_box);
+	}
 
 	for (int i = 0 + m_scroll_position; i < text.size(); i++)
 	{
@@ -490,6 +493,7 @@ void GUI::drawList_l(int x_pos, int y_pos, int spacing, int width, int height, b
 
 		if (vertical_text_pos > y_pos + height - 20)
 		{
+			drawText_l(x_pos + width /2 - 20, vertical_text_pos, "==SCROLL==", "ARIAL_Black");
 			break;
 		}
 

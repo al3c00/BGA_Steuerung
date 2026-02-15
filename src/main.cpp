@@ -122,7 +122,6 @@ int main()
 	
 	int rotation = 0;
 	int asked_sequence = 0;
-	int scrollpos = 0;
 	int y_corr = 0;
 	bool io_state = false;
 
@@ -192,7 +191,7 @@ int main()
 					system_diagram.moveCursor(hw->getEncoderDirection());
 
 				
-					system_diagram.drawBackGroundColor(225, 225, 225);
+					system_diagram.drawBackGroundColor(205, 205, 205);
 					system_diagram.drawVisualElement(0, 0, 480, 800, "Schema", false);
 
 					//Info Elements: Time and date, FPS, ms/frame
@@ -243,24 +242,26 @@ int main()
 						}
 					}
 
-					sequence_overview.drawBackGroundColor(225, 225, 225);
+					sequence_overview.drawBackGroundColor(205, 205, 205);
 					sequence_overview.drawVisualElement(0, 0, 480, 800, "Seq_Liste", false);
 
 
 					//Info Elements: Time and date, FPS, ms/frame
-					sequence_overview.drawVisualElement(0, 0, 480, 30, 245, 245, 245, false);
+					sequence_overview.drawVisualElement(0, 0, 480, 30, 205, 205, 205, false);
 					sequence_overview.drawText_l(231, 9, "FPS: " + std::to_string(target_fps), "ARIAL_Black");
 					sequence_overview.drawText_r(473, 9, "Time(ms)/frame: " + std::to_string((int)total_time_last_frame.count()), "ARIAL_Black");
 					sequence_overview.drawText_l(7, 9, str_current_time, "ARIAL_Black");
 
 					//Sequenzinfo
-					sequence_overview.drawText_l(30, 105, sqh.getSequenceName(asked_sequence) + "  |  Position: " + std::to_string(sqh.getExecutionStep(sqh.getSequenceName(asked_sequence))) + " / Anzahl Schritte: " + std::to_string(sqh.getSequenceStepAmmount(asked_sequence)) + "", "ARIAL_Black");
+					sequence_overview.drawText_l(22, 92, sqh.getSequenceName(asked_sequence) , "ARIAL_Black");
+					sequence_overview.drawText_l(203, 92, sqh.getExecutionStep(sqh.getSequenceName(asked_sequence)), "ARIAL_Black");
+					sequence_overview.drawText_l(282, 92, sqh.getSequenceStepAmmount(asked_sequence), "ARIAL_Black");
 
 					//Sequenzanzahl
-					sequence_overview.drawText_l(367, 105, std::to_string(sqh.getAmmountOfLoadedSequences()), "ARIAL_Black");
+					sequence_overview.drawText_l(368, 92, std::to_string(sqh.getAmmountOfLoadedSequences()), "ARIAL_Black");
 
 
-					sequence_overview.drawList_l(23, 137, 22, 270, 648, hw->getButton3Press(), hw->getButton4Press(), sqh.getSequenceFunctions(asked_sequence), "ARIAL_Black");
+					sequence_overview.drawList_l(23, 120, 22, 270, 660, hw->getButton3Press(), hw->getButton4Press(), sqh.getSequenceFunctions(asked_sequence), "ARIAL_Black", false);
 
 
 					for (int i = 0; i < sqh.getAmmountOfLoadedSequences(); i++)
@@ -269,7 +270,7 @@ int main()
 						/*sequence_overview.drawText_l(305, 160 + i* 20, "Sequence " + std::to_string(i) + ": " + std::to_string(sqh.getExecutionStep(sqh.getSequenceName(i))), "ARIAL_Black");
 						sequence_overview.drawText_l(305, 160 + i *20, "Sequence " + std::to_string(i) + ": " + std::to_string(sqh.getExecutionStep(sqh.getSequenceName(i))), "ARIAL_Black");*/
 
-						sequence_overview.drawList_l(367, 160+ i*40, 20, { sqh.getSequenceName(i), std::to_string(sqh.getExecutionStep(sqh.getSequenceName(i)))}, "ARIAL_Black");
+						sequence_overview.drawList_l(368, 138+ i*40, 20, { sqh.getSequenceName(i), std::to_string(sqh.getExecutionStep(sqh.getSequenceName(i)))}, "ARIAL_Black");
 					}
 
 

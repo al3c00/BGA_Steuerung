@@ -62,7 +62,7 @@ public:
 	//@param font Font-variant from collection that should be used
 	void drawList_l(int x_pos, int y_pos, int spacing,  std::vector<std::string> text, std::string font);
 	void drawList_l(int x_pos, int y_pos, int spacing, int width, int height, int scrollpos, std::vector<std::string> text, std::string font);
-	void drawList_l(int x_pos, int y_pos, int spacing, int width, int height, bool scroll_forward, bool scroll_backward, std::vector<std::string> text, std::string font);
+	void drawList_l(int x_pos, int y_pos, int spacing, int width, int height, bool scroll_forward, bool scroll_backward, std::vector<std::string> text, std::string font, bool has_background);
 	
 
 	//@brief Function to draw the text in the backbuffer
