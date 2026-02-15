@@ -53,17 +53,26 @@ public:
 	std::string getSequenceName(int number);
 	
 	//@brief Gets the ammount of loaded sequences
-	int getAmmountOfLoadedSequences();
+	int getNmbrOfRunningSequences();
 
 
 private:
 	
-
+	int m_running_sequences_counter;
 
 	Log* m_p_logger;
 	std::shared_ptr<HW_Con> m_p_hw_con;
 
-	std::vector<std::thread>m_threads_list;
+
+	//Struct to hold infos about all the threads. Infos about stopped threads (which have finished the sequence) remain in the vector that contains the struct to organize the forcfull killing of them
+	struct ThreadInfo
+	{
+		std::thread th;
+		int current_execution_step;
+		bool is_active;
+		std::string sequence_name;
+	};
+	std::vector<ThreadInfo>m_threads_list;
 
 	std::mutex m_HW_Con_mutex;
 
@@ -83,16 +92,6 @@ private:
 	std::map<int, std::string>m_sequence_names;//Map to assign the names of sequence to her position in the vector
 	
 	
-	//Struct with informations about the running sequences
-	struct RunningSeqInfo
-	{
-		int current_step;//Current step of the sequence
-		bool is_extern_paused;//If the execution of the sequence should be paused by an other part of the programm, set this to true
-		
-	};
-
-	std::map<std::string, RunningSeqInfo>m_running_sequences_info;//Map that holds information about all the running threads. The key is the name of the sequence
-
 	std::vector<std::string>m_sequence_return_vector;
 	int m_sequence_return_number;
 
@@ -101,8 +100,8 @@ private:
 	//@param name Name of the sequence
 	//@param v_seq Reference to the vector of all loaded sequences
 	//@param seq_nmbr Position of the sequence wished to start in the vector
-	//@param info_map Reference to the map that hold the information about all running and stopped sequences
-	void m_playSequenceN(std::string name, std::vector<std::vector<Seq_Part_Info>>& v_seq, int seq_nmbr , std::map<std::string, RunningSeqInfo>& info_map);
+	//@param thread_list Reference to the vector that hold the information about all running and stopped vectors
+	void m_playSequenceN(std::string name, std::vector<std::vector<Seq_Part_Info>>& v_seq, int seq_nmbr);
 
 	std::string m_log_origin;
 	std::string m_getProjectDirPath();

@@ -11,6 +11,28 @@ Sequence_Handler::Sequence_Handler(Log* logger, std::shared_ptr<HW_Con> hw_con)
 	m_sequence_return_vector.reserve(50);
 	m_sequence_return_number = -1;
 
+	m_running_sequences_counter = 0;
+}
+
+void Sequence_Handler::reloadSequences()
+{
+	for (int i = 0; i < m_threads_list.size(); i++)
+	{
+		if (m_threads_list.at(i).is_active != false)
+		{
+			m_running_sequences_counter--;//Decrease only if the thread has not yet been set to stop. Remember: the info about the stopped threads remain in the vector "m_threads_list"
+		}
+
+		m_threads_list.at(i).is_active = false;
+	}
+
+	m_sequences.clear();
+	m_sequence_names.clear();
+
+	loadSequences(m_sequence_dir);
+
+	startSequences();
+
 
 }
 
@@ -272,18 +294,17 @@ void Sequence_Handler::startSequences()
 {
 	for (int i = 0; i < m_sequences.size(); i++)
 	{
-		m_running_sequences_info.insert({ m_sequence_names.at(i), {0, false} });
-		m_threads_list.push_back(std::thread(& Sequence_Handler::m_playSequenceN, this, m_sequence_names.at(i), std::ref(m_sequences), i, std::ref(m_running_sequences_info)));
-
+		m_threads_list.push_back({ std::thread(&Sequence_Handler::m_playSequenceN, this, m_sequence_names.at(i), std::ref(m_sequences), i), 0, true, "TEST"});
+		m_running_sequences_counter++;
 	}
 }
 
 
 
-int Sequence_Handler::getExecutionStep(std::string name)
-{
-	return m_running_sequences_info.at(name).current_step;
-}
+//int Sequence_Handler::getExecutionStep()
+//{
+//	return m_running_sequences_info.at(name).current_step;
+//}
 
 
 
@@ -348,53 +369,45 @@ std::string Sequence_Handler::getSequenceName(int number)
 	return m_sequence_names.at(number);
 }
 
-int Sequence_Handler::getAmmountOfLoadedSequences()
+int Sequence_Handler::getNmbrOfRunningSequences()
 {
-	return m_sequences.size();
+	return m_running_sequences_counter;
 }
 
 
 
-void Sequence_Handler::m_playSequenceN(std::string name, std::vector<std::vector<Seq_Part_Info>>& v_seq, int seq_nmbr, std::map<std::string, RunningSeqInfo>& info_map)
+void Sequence_Handler::m_playSequenceN(std::string name, std::vector<std::vector<Seq_Part_Info>>& v_seq, int thread_nmbr)
 {
 	
-	for(int current_step = 0; current_step < v_seq.at(seq_nmbr).size(); current_step++)
+	for(int current_step = 0; current_step < v_seq.at(thread_nmbr).size(); current_step++)
 	{
 
-		info_map.at(name).current_step = current_step;
-
+		m_threads_list.at(thread_nmbr).current_execution_step = current_step;
 		
-
-		//If the sequence is set to stop externaly, enter this condition and just wait 
-		if (info_map.at(name).is_extern_paused)
+		if (!m_threads_list.at(thread_nmbr).is_active)
 		{
-			do
-			{
-				std::this_thread::sleep_for(std::chrono::milliseconds(200));
-			} while (info_map.at(name).is_extern_paused);
+			break;
 		}
 
-	
-
-		switch (v_seq.at(seq_nmbr).at(current_step).type)
+		switch (v_seq.at(thread_nmbr).at(current_step).type)
 		{
 			//wait functions in different time units: milliseconds, seconds, minutes, hours
 		case SEQ_FUNCTION_TYPE::WAIT_MS:
 		{
-			std::this_thread::sleep_for(std::chrono::milliseconds(v_seq.at(seq_nmbr).at(current_step).param_int1));
+			std::this_thread::sleep_for(std::chrono::milliseconds(v_seq.at(thread_nmbr).at(current_step).param_int1));
 		}break;
 
 		case SEQ_FUNCTION_TYPE::WAIT_S:
 		{
-			std::this_thread::sleep_for(std::chrono::seconds(v_seq.at(seq_nmbr).at(current_step).param_int1));
+			std::this_thread::sleep_for(std::chrono::seconds(v_seq.at(thread_nmbr).at(current_step).param_int1));
 		}break;
 		case SEQ_FUNCTION_TYPE::WAIT_MIN:
 		{
-			std::this_thread::sleep_for(std::chrono::minutes(v_seq.at(seq_nmbr).at(current_step).param_int1));
+			std::this_thread::sleep_for(std::chrono::minutes(v_seq.at(thread_nmbr).at(current_step).param_int1));
 		}break;
 		case SEQ_FUNCTION_TYPE::WAIT_H:
 		{
-			std::this_thread::sleep_for(std::chrono::hours(v_seq.at(seq_nmbr).at(current_step).param_int1));
+			std::this_thread::sleep_for(std::chrono::hours(v_seq.at(thread_nmbr).at(current_step).param_int1));
 		}break;
 
 		//wait until specific time. Format: HHMM --> 1235 =  12:35, uses two int parameters
@@ -406,8 +419,8 @@ void Sequence_Handler::m_playSequenceN(std::string name, std::vector<std::vector
 			std::cout << "Starting to wait at: " << std::put_time(&time_struct, "%H:%M:%S") << std::endl;
 
 
-			int hour = v_seq.at(seq_nmbr).at(current_step).param_int1;
-			int minute = v_seq.at(seq_nmbr).at(current_step).param_int1;
+			int hour = v_seq.at(thread_nmbr).at(current_step).param_int1;
+			int minute = v_seq.at(thread_nmbr).at(current_step).param_int1;
 
 			bool time_reached = false;
 			do
@@ -426,14 +439,14 @@ void Sequence_Handler::m_playSequenceN(std::string name, std::vector<std::vector
 		//Jump to a specific position of the sequence
 		case SEQ_FUNCTION_TYPE::JUMP_TO:
 		{
-			current_step = v_seq.at(seq_nmbr).at(current_step).param_int1 -1;//Need do decrease the target number by one because the for loop increases the step counter before the target function will be executet.
+			current_step = v_seq.at(thread_nmbr).at(current_step).param_int1 -1;//Need do decrease the target number by one because the for loop increases the step counter before the target function will be executet.
 		}break;
 
 		//Progress if the input criteria of ONE input is met
 		case SEQ_FUNCTION_TYPE::PROGRESS_IF_1:
 		{
-			int should_be_value = v_seq.at(seq_nmbr).at(current_step).param_int1;
-			std::string input_to_check1 = v_seq.at(seq_nmbr).at(current_step).param_string1;
+			int should_be_value = v_seq.at(thread_nmbr).at(current_step).param_int1;
+			std::string input_to_check1 = v_seq.at(thread_nmbr).at(current_step).param_string1;
 			bool check_digital = false;
 			int return_value;
 
@@ -472,9 +485,9 @@ void Sequence_Handler::m_playSequenceN(std::string name, std::vector<std::vector
 		//Use the conditions from HW_Con::getDoubleInputState
 		case SEQ_FUNCTION_TYPE::PROGRESS_IF_2:
 		{
-			int should_be_value = v_seq.at(seq_nmbr).at(current_step).param_int1;
-			std::string input_to_check1 = v_seq.at(seq_nmbr).at(current_step).param_string1;
-			std::string input_to_check2 = v_seq.at(seq_nmbr).at(current_step).param_string2;
+			int should_be_value = v_seq.at(thread_nmbr).at(current_step).param_int1;
+			std::string input_to_check1 = v_seq.at(thread_nmbr).at(current_step).param_string1;
+			std::string input_to_check2 = v_seq.at(thread_nmbr).at(current_step).param_string2;
 			int return_value = 0;
 
 			//Can only be used on digital inputs
@@ -491,16 +504,16 @@ void Sequence_Handler::m_playSequenceN(std::string name, std::vector<std::vector
 
 		case SEQ_FUNCTION_TYPE::GET_DIGITAL_INPUT:
 		{
-			m_p_hw_con->getDigitalInputState(v_seq.at(seq_nmbr).at(current_step).param_string1);
+			m_p_hw_con->getDigitalInputState(v_seq.at(thread_nmbr).at(current_step).param_string1);
 		}break;
 
 		case SEQ_FUNCTION_TYPE::SWITCH_DIGITAL_OUTPUT:
 		{
-			m_p_hw_con->switchDigitalOutputState(v_seq.at(seq_nmbr).at(current_step).param_string1);
+			m_p_hw_con->switchDigitalOutputState(v_seq.at(thread_nmbr).at(current_step).param_string1);
 		}break;
 		case SEQ_FUNCTION_TYPE::SET_DIGITAL_OUTPUT:
 		{
-			m_p_hw_con->setDigitalOutputState(v_seq.at(seq_nmbr).at(current_step).param_int1, v_seq.at(seq_nmbr).at(current_step).param_string1);
+			m_p_hw_con->setDigitalOutputState(v_seq.at(thread_nmbr).at(current_step).param_int1, v_seq.at(thread_nmbr).at(current_step).param_string1);
 		}break;
 		}
 
