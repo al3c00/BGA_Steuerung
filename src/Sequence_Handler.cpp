@@ -567,7 +567,7 @@ void Sequence_Handler::m_playSequenceN(std::string name, std::vector<std::vector
 		//Jump to a specific position of the sequence
 		case SEQ_FUNCTION_TYPE::JUMP_TO:
 		{
-			current_step = v_seq.at(seq_nmbr).at(current_step).param_int1;
+			current_step = v_seq.at(seq_nmbr).at(current_step).param_int1 -1;//Need do decrease the target number by one because the for loop increases the step counter before the target function will be executet.
 		}break;
 
 		//Progress if the input criteria of ONE input is met
