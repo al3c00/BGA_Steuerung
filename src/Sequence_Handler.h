@@ -22,10 +22,10 @@ public:
 
 	Sequence_Handler(Log* log, std::shared_ptr<HW_Con> hw_con);
 
-	//Handles for the .txt file where the functions are stored
-	void createSequence();
 
-	void saveSequence();
+	//@brief Use this function with some GUI input after the sequence files (.txt) in the directory has been changed
+	//@brief Automatically starts all sequences
+	void reloadSequences();
 
 
 	//@brief Function who checks how many sequences are in the folder and loads them into a vector
@@ -33,7 +33,7 @@ public:
 	void loadSequences(std::string path);
 
 	//@brief Function to start all loaded sequences at once. Call at starting up the programm after loading the sequences.
-	void startAllSequences();
+	void startSequences();
 
 
 	//@brief Gets the step of the execution the asked sequence is in right now
@@ -63,6 +63,8 @@ private:
 	Log* m_p_logger;
 	std::shared_ptr<HW_Con> m_p_hw_con;
 
+	std::vector<std::thread>m_threads_list;
+
 	std::mutex m_HW_Con_mutex;
 
 	enum SEQ_FUNCTION_TYPE {NOT_DEFINED, WAIT_MS, WAIT_S, WAIT_MIN, WAIT_H, WAIT_UNTIL, JUMP_TO, PROGRESS_IF_1, PROGRESS_IF_2, GET_DIGITAL_INPUT, GET_DOUBLE_DIGITAL_INPUT, GET_ANALOG_INPUT, SET_DIGITAL_OUTPUT, SWITCH_DIGITAL_OUTPUT};
@@ -85,7 +87,8 @@ private:
 	struct RunningSeqInfo
 	{
 		int current_step;//Current step of the sequence
-		bool extern_stop;//If the execution of the sequence should be stopped by an other part of the programm, set this to true
+		bool is_extern_paused;//If the execution of the sequence should be paused by an other part of the programm, set this to true
+		
 	};
 
 	std::map<std::string, RunningSeqInfo>m_running_sequences_info;//Map that holds information about all the running threads. The key is the name of the sequence
@@ -103,6 +106,8 @@ private:
 
 	std::string m_log_origin;
 	std::string m_getProjectDirPath();
+
+	std::string m_sequence_dir;//Name of the sequence directory. Used to reload sequences
 
 
 };

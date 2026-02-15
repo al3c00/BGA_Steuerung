@@ -394,23 +394,41 @@ void HW_Con::initialisePCBRelayState()
 	uint8_t msg_0_7 = 0;
 	uint8_t msg_8_15 = 0;
 
-	msg_0_7 = ((m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_0").is_active) << 7 |
-		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_1").is_active << 6) |
-		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_2").is_active << 5) |
-		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_3").is_active << 4) |
-		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_4").is_active << 3) |
-		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_5").is_active << 2) |
-		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_6").is_active << 1) |
-		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_7").is_active));
+	m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_0").is_active = false;
+	m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_1").is_active = false;
+	m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_2").is_active = false;
+	m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_3").is_active = false;
+	m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_4").is_active = false;
+	m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_5").is_active = false;
+	m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_6").is_active = false;
+	m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_7").is_active = false;
+	m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_8").is_active = false;
+	m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_9").is_active = false;
+	m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_10").is_active = false;
+	m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_11").is_active = false;
+	m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_12").is_active = false;
+	m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_13").is_active = false;
+	m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_14").is_active = false;
+	m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_15").is_active = false;
+	
 
-	msg_8_15 = ((m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_8").is_active) << 7 |
-		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_9").is_active << 6) |
-		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_10").is_active << 5) |
-		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_11").is_active << 4) |
+	msg_0_7 = ((m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_7").is_active) << 7 |
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_6").is_active << 6) |
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_5").is_active << 5) |
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_4").is_active << 4) |
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_3").is_active << 3) |
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_2").is_active << 2) |
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_1").is_active << 1) |
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_0").is_active));
+
+	msg_8_15 = ((m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_15").is_active) << 7 |
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_14").is_active << 6) |
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_13").is_active << 5) |
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_12").is_active << 4) |
 		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_12").is_active << 3) |
-		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_13").is_active << 2) |
-		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_14").is_active << 1) |
-		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_15").is_active));
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_10").is_active << 2) |
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_9").is_active << 1) |
+		(m_PCF8574_DigitalOut_Adresse_collection.at("D_Out_8").is_active));
 
 	wiringPiI2CWrite(m_PCF_IO_35, msg_0_7);
 	wiringPiI2CWrite(m_PCF_IO_36, msg_8_15);

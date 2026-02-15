@@ -71,7 +71,7 @@ int main()
 
 
 	sqh.loadSequences("/sequences");
-	sqh.startAllSequences();
+	sqh.startSequences();
 	
 	
 
@@ -125,8 +125,10 @@ int main()
 	int y_corr = 0;
 	bool io_state = false;
 
+
 	do
 	{
+		
 
 		now = std::chrono::system_clock::now();
 		total_time_last_frame = now - last_frame;
@@ -143,14 +145,7 @@ int main()
 		if (total_time_last_frame.count() > static_cast<float>(1000) /target_fps)
 		{	
 
-			//if (!hw->getDigitalInputState("D_In_1"))
-			//{
-			//	hw->setDigitalOutputState(true, "D_Out_0");
-			//}
-			//else if (hw->getDigitalInputState("D_In_1"))
-			//{
-			//	hw->setDigitalOutputState(false, "D_Out_0");
-			//}
+			
 
 
 			//Iterate over GUI state
