@@ -230,11 +230,7 @@ int main()
 					
 					if (hw->getButton1Press())
 					{
-						asked_sequence++;
-						if (asked_sequence > sqh.getNmbrOfRunningSequences() - 1)
-						{
-							asked_sequence = 0;
-						}
+						sqh.switchThroughSequences();
 					}
 
 					sequence_overview.drawBackGroundColor(205, 205, 205);
@@ -248,15 +244,15 @@ int main()
 					sequence_overview.drawText_l(7, 9, str_current_time, "ARIAL_Black");
 
 					//Sequenzinfo
-				/*	sequence_overview.drawText_l(22, 92, sqh.getSequenceName(asked_sequence) , "ARIAL_Black");
-					sequence_overview.drawText_l(203, 92, sqh.getExecutionStep(sqh.getSequenceName(asked_sequence)), "ARIAL_Black");
-					sequence_overview.drawText_l(282, 92, sqh.getSequenceStepAmmount(asked_sequence), "ARIAL_Black");*/
+					sequence_overview.drawText_l(22, 92, sqh.getSequenceInfo_Name(), "ARIAL_Black");
+					sequence_overview.drawText_l(203, 92, sqh.getSequenceInfo_CurrentStep(), "ARIAL_Black");
+					sequence_overview.drawText_l(282, 92, sqh.getSequenceInfo_TotalSteps(), "ARIAL_Black");
 
 					//Sequenzanzahl
 					sequence_overview.drawText_l(368, 92, std::to_string(sqh.getNmbrOfRunningSequences()), "ARIAL_Black");
 
 
-					sequence_overview.drawList_l(23, 120, 22, 270, 660, hw->getButton3Press(), hw->getButton4Press(), sqh.getSequenceFunctions(asked_sequence), "ARIAL_Black", false);
+					sequence_overview.drawList_l(23, 120, 22, 270, 660, hw->getButton3Press(), hw->getButton4Press(), sqh.getSequenceInfo_Functions(), "ARIAL_Black", false);
 
 
 					for (int i = 0; i < sqh.getNmbrOfRunningSequences(); i++)
@@ -265,7 +261,7 @@ int main()
 						/*sequence_overview.drawText_l(305, 160 + i* 20, "Sequence " + std::to_string(i) + ": " + std::to_string(sqh.getExecutionStep(sqh.getSequenceName(i))), "ARIAL_Black");
 						sequence_overview.drawText_l(305, 160 + i *20, "Sequence " + std::to_string(i) + ": " + std::to_string(sqh.getExecutionStep(sqh.getSequenceName(i))), "ARIAL_Black");*/
 
-						sequence_overview.drawList_l(368, 138+ i*40, 20, { sqh.getSequenceName(i), std::to_string(sqh.getExecutionStep(sqh.getSequenceName(i)))}, "ARIAL_Black");
+						//sequence_overview.drawList_l(368, 138+ i*40, 20, { sqh.getSequenceName(i), std::to_string(sqh.getExecutionStep(sqh.getSequenceName(i)))}, "ARIAL_Black");
 					}
 
 

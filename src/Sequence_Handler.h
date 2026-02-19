@@ -38,45 +38,39 @@ public:
 
 	//@brief Gets the step of the execution the asked sequence is in right now
 	//@param name The name of the sequence. The same as in the Sequences.txt file, without the #
-	int getExecutionStep(std::string name);
+	int getSequenceInfo_CurrentStep();
 
 	//@brief Gets the individual functions of a sequence stored in a vector
 	//@param name name of the sequence as written in the file without #
 	//@param number Gets the sequence stored in NUMBER pos in map..use to switch through all the sequences without using their names
-	std::vector<std::string> getSequenceFunctions(int number);
+	std::vector<std::string> getSequenceInfo_Functions();
 
 	//@brief Gets the ammount of total function steps --> length of the sequence
 	//@param number Gets the sequence stored in NUMBER pos in map..use to switch through all the sequences without using their names
-	int getSequenceStepAmmount(int number);
+	int getSequenceInfo_TotalSteps();
 
 	//@brief Use together with getSequenceFunctions(int number)
-	std::string getSequenceName(int number);
+	std::string getSequenceInfo_Name();
 	
 	//@brief Gets the ammount of loaded sequences
 	int getNmbrOfRunningSequences();
 
+	void switchThroughSequences();
+	int getAskedSequence();
+
 
 private:
 	
-	int m_running_sequences_counter;
+	int m_running_threads;//Use this number to count the newly loaded functions in "loadFunctions". Begin from zero by every function call
+	int m_stopped_threads;//Use this number to count stopped threads to know, where the active threads in the vector "m_threads_list" begin
+	int m_total_threads;//Increase this number every time a new thread is started. Use it to find the correct position in the vector "m_threads_list"
+	
+	int m_currently_asked_sequence;
 
 	Log* m_p_logger;
 	std::shared_ptr<HW_Con> m_p_hw_con;
 
-
-	//Struct to hold infos about all the threads. Infos about stopped threads (which have finished the sequence) remain in the vector that contains the struct to organize the forcfull killing of them
-	struct ThreadInfo
-	{
-		std::thread th;
-		int current_execution_step;
-		bool is_active;
-		std::string sequence_name;
-	};
-	std::vector<ThreadInfo>m_threads_list;
-
-	std::mutex m_HW_Con_mutex;
-
-	enum SEQ_FUNCTION_TYPE {NOT_DEFINED, WAIT_MS, WAIT_S, WAIT_MIN, WAIT_H, WAIT_UNTIL, JUMP_TO, PROGRESS_IF_1, PROGRESS_IF_2, GET_DIGITAL_INPUT, GET_DOUBLE_DIGITAL_INPUT, GET_ANALOG_INPUT, SET_DIGITAL_OUTPUT, SWITCH_DIGITAL_OUTPUT};
+	enum SEQ_FUNCTION_TYPE { NOT_DEFINED, WAIT_MS, WAIT_S, WAIT_MIN, WAIT_H, WAIT_UNTIL, JUMP_TO, PROGRESS_IF_1, PROGRESS_IF_2, GET_DIGITAL_INPUT, GET_DOUBLE_DIGITAL_INPUT, GET_ANALOG_INPUT, SET_DIGITAL_OUTPUT, SWITCH_DIGITAL_OUTPUT };
 
 	//Struct to describe one step/function in the sequences. Holds the function type as enum SEQ_FUNCTION_TYPE and 3 int parameters
 	struct Seq_Part_Info
@@ -87,9 +81,24 @@ private:
 		std::string param_string1, param_string2;
 	};
 
+	//Struct to hold infos about all the threads. Infos about stopped threads (which have finished the sequence) remain in the vector that contains the struct to organize the forcfull killing of them
+	struct ThreadInfo
+	{
+		int current_execution_step;
+		bool is_active;
+		std::string sequence_name;
+		std::vector<Seq_Part_Info> sequence_functions;
+	};
+
+
+	std::vector<ThreadInfo>m_threads_list;//Vector, that holds information about the running threads
+
+	std::mutex m_HW_Con_mutex;
+
 	
-	std::vector<std::vector<Seq_Part_Info>>m_sequences;//Vector, that holds the loades sequences. 
-	std::map<int, std::string>m_sequence_names;//Map to assign the names of sequence to her position in the vector
+
+
+
 	
 	
 	std::vector<std::string>m_sequence_return_vector;
@@ -97,11 +106,9 @@ private:
 
 
 	//@brief Start a specific sequence
-	//@param name Name of the sequence
-	//@param v_seq Reference to the vector of all loaded sequences
-	//@param seq_nmbr Position of the sequence wished to start in the vector
-	//@param thread_list Reference to the vector that hold the information about all running and stopped vectors
-	void m_playSequenceN(std::string name, std::vector<std::vector<Seq_Part_Info>>& v_seq, int seq_nmbr);
+	//@param r_thread_info Reference to the vector that holds information about all loaded threads, even if they are stopped
+	//@param thread_number Use a counter to assign a number to each loaded thread. The number is used to find the correct position in the vector to get inforamtion
+	void m_playSequence(std::vector<ThreadInfo>& r_thread_info, int thread_number);
 
 	std::string m_log_origin;
 	std::string m_getProjectDirPath();

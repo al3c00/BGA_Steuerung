@@ -11,32 +11,14 @@ Sequence_Handler::Sequence_Handler(Log* logger, std::shared_ptr<HW_Con> hw_con)
 	m_sequence_return_vector.reserve(50);
 	m_sequence_return_number = -1;
 
-	m_running_sequences_counter = 0;
+	m_running_threads = 0;
+	m_stopped_threads = 0;
+	m_total_threads = 0;
+
+	m_currently_asked_sequence = 0;
+
+	m_threads_list.reserve(20);
 }
-
-void Sequence_Handler::reloadSequences()
-{
-	for (int i = 0; i < m_threads_list.size(); i++)
-	{
-		if (m_threads_list.at(i).is_active != false)
-		{
-			m_running_sequences_counter--;//Decrease only if the thread has not yet been set to stop. Remember: the info about the stopped threads remain in the vector "m_threads_list"
-		}
-
-		m_threads_list.at(i).is_active = false;
-	}
-
-	m_sequences.clear();
-	m_sequence_names.clear();
-
-	loadSequences(m_sequence_dir);
-
-	startSequences();
-
-
-}
-
-
 
 
 
@@ -49,7 +31,7 @@ void Sequence_Handler::loadSequences(std::string path)
 
 	std::string temp;
 	std::string single_character;
-	temp.reserve(100);
+	temp.reserve(20);
 
 	int sequence_step = 0;
 	int param_nmbr = 0;
@@ -58,7 +40,7 @@ void Sequence_Handler::loadSequences(std::string path)
 	bool seq_step_awaits_both_params = false;//Set this variable to true if the sequence step (function) that is loaded takes integer and string arguments. E.g. PROGRESS_IF. There can only (!!) be written one int and one string argument
 	bool begin_reading_seq_step_params = false;//Set this variable TRUE if the SEQ_FUNCTION_TYPE is read and the arguments are found in the .txt file (they are in () brackets)
 
-	std::vector<Seq_Part_Info>sequence_parts;
+	m_running_threads = 0;
 
 	//Check, how many sequences are stored (numbr of files)
 	int nmbr_seq = 0;
@@ -91,10 +73,11 @@ void Sequence_Handler::loadSequences(std::string path)
 		file.close();
 
 		m_p_logger->writeLog(LogLevel::INFO, m_log_origin + "  SEQUENCE_LOADER",
-			"Loading: " + i.path().generic_string());
+			"Loading: " + i.path().generic_string() + '\n');
 
-		sequence_parts.clear();
-		sequence_parts.reserve(50);
+		
+		m_threads_list.push_back({ 0, true, "" }); //Create a new instance of ThreadInfo in the m_threads_list vector
+		m_threads_list.at(currently_loading_sequence).sequence_functions.reserve(20);
 
 		for (std::size_t i = 0; i < buffer.size(); ++i)
 		{
@@ -108,7 +91,7 @@ void Sequence_Handler::loadSequences(std::string path)
 
 			if (single_character == "{")
 			{
-				m_sequence_names.insert({ currently_loading_sequence, temp });
+				m_threads_list.at(currently_loading_sequence).sequence_name = temp;  
 				temp.clear();
 			}
 
@@ -116,43 +99,43 @@ void Sequence_Handler::loadSequences(std::string path)
 			{
 				if (temp == "WAIT_MS")
 				{
-					sequence_parts.push_back({ "WAIT_MS:",  SEQ_FUNCTION_TYPE::NOT_DEFINED, -1, -1, "", "" });
-					sequence_parts.at(sequence_step).type = SEQ_FUNCTION_TYPE::WAIT_MS;
+					m_threads_list.at(currently_loading_sequence).sequence_functions.push_back({ "WAIT_MS:",  SEQ_FUNCTION_TYPE::NOT_DEFINED, -1, -1, "", "" });
+					m_threads_list.at(currently_loading_sequence).sequence_functions.at(sequence_step).type = SEQ_FUNCTION_TYPE::WAIT_MS;
 					seq_step_awaits_string_params = false;
 					temp.clear();
 				}
 				else if (temp == "WAIT_S")
 				{
-					sequence_parts.push_back({ "WAIT_S:",  SEQ_FUNCTION_TYPE::NOT_DEFINED, -1, -1, "", "" });
-					sequence_parts.at(sequence_step).type = SEQ_FUNCTION_TYPE::WAIT_S;
+					m_threads_list.at(currently_loading_sequence).sequence_functions.push_back({ "WAIT_S:",  SEQ_FUNCTION_TYPE::NOT_DEFINED, -1, -1, "", "" });
+					m_threads_list.at(currently_loading_sequence).sequence_functions.at(sequence_step).type = SEQ_FUNCTION_TYPE::WAIT_S;
 					seq_step_awaits_string_params = false;
 					temp.clear();
 				}
 				else if (temp == "WAIT_MIN")
 				{
-					sequence_parts.push_back({ "WAIT_MIN:",  SEQ_FUNCTION_TYPE::NOT_DEFINED, -1, -1, "", "" });
-					sequence_parts.at(sequence_step).type = SEQ_FUNCTION_TYPE::WAIT_MIN;
+					m_threads_list.at(currently_loading_sequence).sequence_functions.push_back({ "WAIT_MIN:",  SEQ_FUNCTION_TYPE::NOT_DEFINED, -1, -1, "", "" });
+					m_threads_list.at(currently_loading_sequence).sequence_functions.at(sequence_step).type = SEQ_FUNCTION_TYPE::WAIT_MIN;
 					seq_step_awaits_string_params = false;
 					temp.clear();
 				}
 				else if (temp == "WAIT_H")
 				{
-					sequence_parts.push_back({ "WAIT_H:",  SEQ_FUNCTION_TYPE::NOT_DEFINED, -1, -1, "", "" });
-					sequence_parts.at(sequence_step).type = SEQ_FUNCTION_TYPE::WAIT_H;
+					m_threads_list.at(currently_loading_sequence).sequence_functions.push_back({ "WAIT_H:",  SEQ_FUNCTION_TYPE::NOT_DEFINED, -1, -1, "", "" });
+					m_threads_list.at(currently_loading_sequence).sequence_functions.at(sequence_step).type = SEQ_FUNCTION_TYPE::WAIT_H;
 					seq_step_awaits_string_params = false;
 					temp.clear();
 				}
 				else if (temp == "WAIT_UNTIL")
 				{
-					sequence_parts.push_back({ "WAIT_UNTIL:",  SEQ_FUNCTION_TYPE::NOT_DEFINED, -1, -1, "", "" });
-					sequence_parts.at(sequence_step).type = SEQ_FUNCTION_TYPE::WAIT_UNTIL;
+					m_threads_list.at(currently_loading_sequence).sequence_functions.push_back({ "WAIT_UNTIL:",  SEQ_FUNCTION_TYPE::NOT_DEFINED, -1, -1, "", "" });
+					m_threads_list.at(currently_loading_sequence).sequence_functions.at(sequence_step).type = SEQ_FUNCTION_TYPE::WAIT_UNTIL;
 					seq_step_awaits_string_params = false;
 					temp.clear();
 				}
 				else if (temp == "JUMP_TO")
 				{
-					sequence_parts.push_back({ "JUMP_TO", SEQ_FUNCTION_TYPE::NOT_DEFINED, -1, -1, "", "" });
-					sequence_parts.at(sequence_step).type = SEQ_FUNCTION_TYPE::JUMP_TO;
+					m_threads_list.at(currently_loading_sequence).sequence_functions.push_back({ "JUMP_TO", SEQ_FUNCTION_TYPE::NOT_DEFINED, -1, -1, "", "" });
+					m_threads_list.at(currently_loading_sequence).sequence_functions.at(sequence_step).type = SEQ_FUNCTION_TYPE::JUMP_TO;
 					seq_step_awaits_string_params = false;
 					seq_step_awaits_both_params = false;
 					temp.clear();
@@ -160,37 +143,37 @@ void Sequence_Handler::loadSequences(std::string path)
 
 				else if (temp == "PROGRESS_IF_1")
 				{
-					sequence_parts.push_back({ "PROGRESS_IF_1", SEQ_FUNCTION_TYPE::NOT_DEFINED, -1, -1, "", "" });
-					sequence_parts.at(sequence_step).type = SEQ_FUNCTION_TYPE::PROGRESS_IF_1;
+					m_threads_list.at(currently_loading_sequence).sequence_functions.push_back({ "PROGRESS_IF_1", SEQ_FUNCTION_TYPE::NOT_DEFINED, -1, -1, "", "" });
+					m_threads_list.at(currently_loading_sequence).sequence_functions.at(sequence_step).type = SEQ_FUNCTION_TYPE::PROGRESS_IF_1;
 					seq_step_awaits_string_params = false;
 					seq_step_awaits_both_params = true;
 					temp.clear();
 				}
 				else if (temp == "GET_DIGITAL_INPUT")
 				{
-					sequence_parts.push_back({ "PROGRESS_IF_2", SEQ_FUNCTION_TYPE::NOT_DEFINED, -1, -1, "", "" });
-					sequence_parts.at(sequence_step).type = SEQ_FUNCTION_TYPE::GET_DIGITAL_INPUT;
+					m_threads_list.at(currently_loading_sequence).sequence_functions.push_back({ "PROGRESS_IF_2", SEQ_FUNCTION_TYPE::NOT_DEFINED, -1, -1, "", "" });
+					m_threads_list.at(currently_loading_sequence).sequence_functions.at(sequence_step).type = SEQ_FUNCTION_TYPE::GET_DIGITAL_INPUT;
 					seq_step_awaits_string_params = true;
 					temp.clear();
 				}
 				else if (temp == "GET_DOUBLE_DIGITAL_INPUT")
 				{
-					sequence_parts.push_back({ "GET_DOUBLE_DIGITAL_INPUT", SEQ_FUNCTION_TYPE::NOT_DEFINED, -1, -1, "", "" });
-					sequence_parts.at(sequence_step).type = SEQ_FUNCTION_TYPE::GET_DOUBLE_DIGITAL_INPUT;
+					m_threads_list.at(currently_loading_sequence).sequence_functions.push_back({ "GET_DOUBLE_DIGITAL_INPUT", SEQ_FUNCTION_TYPE::NOT_DEFINED, -1, -1, "", "" });
+					m_threads_list.at(currently_loading_sequence).sequence_functions.at(sequence_step).type = SEQ_FUNCTION_TYPE::GET_DOUBLE_DIGITAL_INPUT;
 					seq_step_awaits_string_params = true;
 					temp.clear();
 				}
 				else if (temp == "SWITCH_DIGITAL_OUTPUT")
 				{
-					sequence_parts.push_back({ "SWITCH_DIGITAL_OUTPUT", SEQ_FUNCTION_TYPE::NOT_DEFINED, -1, -1, "", "" });
-					sequence_parts.at(sequence_step).type = SEQ_FUNCTION_TYPE::SWITCH_DIGITAL_OUTPUT;
+					m_threads_list.at(currently_loading_sequence).sequence_functions.push_back({ "SWITCH_DIGITAL_OUTPUT", SEQ_FUNCTION_TYPE::NOT_DEFINED, -1, -1, "", "" });
+					m_threads_list.at(currently_loading_sequence).sequence_functions.at(sequence_step).type = SEQ_FUNCTION_TYPE::SWITCH_DIGITAL_OUTPUT;
 					seq_step_awaits_string_params = true;
 					temp.clear();
 				}
 				else if (temp == "SET_DIGITAL_OUTPUT")
 				{
-					sequence_parts.push_back({ "SET_DIGITAL_OUTPUT", SEQ_FUNCTION_TYPE::NOT_DEFINED, -1, -1, "", "" });
-					sequence_parts.at(sequence_step).type = SEQ_FUNCTION_TYPE::SET_DIGITAL_OUTPUT;
+					m_threads_list.at(currently_loading_sequence).sequence_functions.push_back({ "SET_DIGITAL_OUTPUT", SEQ_FUNCTION_TYPE::NOT_DEFINED, -1, -1, "", "" });
+					m_threads_list.at(currently_loading_sequence).sequence_functions.at(sequence_step).type = SEQ_FUNCTION_TYPE::SET_DIGITAL_OUTPUT;
 					seq_step_awaits_string_params = true;
 					seq_step_awaits_both_params = true;
 					temp.clear();
@@ -212,13 +195,13 @@ void Sequence_Handler::loadSequences(std::string path)
 					{
 						if (param_nmbr == 0)
 						{
-							sequence_parts.at(sequence_step).param_string1 = temp;
+							m_threads_list.at(currently_loading_sequence).sequence_functions.at(sequence_step).param_string1 = temp;
 							param_nmbr++;
 							temp.clear();
 						}
 						else if (param_nmbr == 1)
 						{
-							sequence_parts.at(sequence_step).param_string2 = temp;
+							m_threads_list.at(currently_loading_sequence).sequence_functions.at(sequence_step).param_string2 = temp;
 							param_nmbr = 0;
 							temp.clear();
 						}
@@ -228,13 +211,13 @@ void Sequence_Handler::loadSequences(std::string path)
 					{
 						if (param_nmbr == 0)
 						{
-							sequence_parts.at(sequence_step).param_int1 = std::stoi(temp);
+							m_threads_list.at(currently_loading_sequence).sequence_functions.at(sequence_step).param_int1 = std::stoi(temp);
 							param_nmbr++;
 							temp.clear();
 						}
 						else if (param_nmbr == 1)
 						{
-							sequence_parts.at(sequence_step).param_int2 = std::stoi(temp);
+							m_threads_list.at(currently_loading_sequence).sequence_functions.at(sequence_step).param_int2 = std::stoi(temp);
 							param_nmbr = 0;
 							temp.clear();
 						}
@@ -243,19 +226,19 @@ void Sequence_Handler::loadSequences(std::string path)
 					{
 						if (param_nmbr == 0)
 						{
-							sequence_parts.at(sequence_step).param_int1 = std::stoi(temp);
+							m_threads_list.at(currently_loading_sequence).sequence_functions.at(sequence_step).param_int1 = std::stoi(temp);
 							param_nmbr++;
 							temp.clear();
 						}
 						else if (param_nmbr == 1)
 						{
-							sequence_parts.at(sequence_step).param_string1 = temp;
+							m_threads_list.at(currently_loading_sequence).sequence_functions.at(sequence_step).param_string1 = temp;
 							temp.clear();
 							param_nmbr++;
 						}
 						else if (param_nmbr == 2)
 						{
-							sequence_parts.at(sequence_step).param_string2 = temp;
+							m_threads_list.at(currently_loading_sequence).sequence_functions.at(sequence_step).param_string2 = temp;
 							temp.clear();
 
 							param_nmbr = 0;
@@ -279,70 +262,66 @@ void Sequence_Handler::loadSequences(std::string path)
 			//Finish reading hole sequence with "}"
 			if (single_character == "}")
 			{
-				m_sequences.push_back(sequence_parts);
 				sequence_step = 0;
-				sequence_parts.clear();
-
 			}
 
 		}
 		currently_loading_sequence++;
+		m_running_threads++;
 	}
+
 }
 
 void Sequence_Handler::startSequences()
 {
-	for (int i = 0; i < m_sequences.size(); i++)
+	for (int i = 0; i < m_running_threads; i++)
 	{
-		m_threads_list.push_back({ std::thread(&Sequence_Handler::m_playSequenceN, this, m_sequence_names.at(i), std::ref(m_sequences), i), 0, true, "TEST"});
-		m_running_sequences_counter++;
+		std::thread(&Sequence_Handler::m_playSequence, this, std::ref(m_threads_list), m_total_threads).detach();
+		m_total_threads++;
 	}
+}
+
+int Sequence_Handler::getSequenceInfo_CurrentStep()
+{
+	return m_threads_list.at(m_currently_asked_sequence).current_execution_step;
 }
 
 
 
-//int Sequence_Handler::getExecutionStep()
-//{
-//	return m_running_sequences_info.at(name).current_step;
-//}
 
 
-
-std::vector<std::string> Sequence_Handler::getSequenceFunctions(int number)
+std::vector<std::string> Sequence_Handler::getSequenceInfo_Functions()
 {
-	if (number > m_sequences.size() -1)
-	{
-		number = m_sequences.size() - 1;
-	}
-	if (number != m_sequence_return_number)
+
+	if (m_currently_asked_sequence != m_sequence_return_number)
 	{
 		m_sequence_return_vector.clear();
 
-		m_sequence_return_number = number;
+		m_sequence_return_number = m_currently_asked_sequence;
 
 		
-		for (int i = 0; i < m_sequences.at(number).size(); i++)
+		for (int i = 0; i < m_threads_list.at(m_currently_asked_sequence).sequence_functions.size(); i++)
 		{
 			//Getting function name
-			m_sequence_return_vector.push_back(m_sequences.at(number).at(i).seq_function_name);
+			m_sequence_return_vector.push_back(m_threads_list.at(m_currently_asked_sequence).sequence_functions.at(i).seq_function_name);
 
 			//Getting the params
 			//In the return vector .at(0) is START, so the add 1 to i when appending the params
-			if (m_sequences.at(number).at(i).param_int1 != -1)
+			if (m_threads_list.at(m_currently_asked_sequence).sequence_functions.at(i).param_int1 != -1)
 			{
-				m_sequence_return_vector.at(i).append("(" + std::to_string(m_sequences.at(number).at(i).param_int1)+ ")");
+				m_sequence_return_vector.at(i).append("(" + std::to_string(m_threads_list.at(m_currently_asked_sequence).sequence_functions.at(i).param_int1)+ ")");
 			}
-			if (m_sequences.at(number).at(i).param_int2 != -1)
+			if (m_threads_list.at(m_currently_asked_sequence).sequence_functions.at(i).param_int2 != -1)
 			{
-				m_sequence_return_vector.at(i).append("(" + std::to_string(m_sequences.at(number).at(i).param_int2)+ ")");
+				m_sequence_return_vector.at(i).append("(" + std::to_string(m_threads_list.at(m_currently_asked_sequence).sequence_functions.at(i).param_int2)+ ")");
 			}
-			if (!m_sequences.at(number).at(i).param_string1.empty())
+			if (!m_threads_list.at(m_currently_asked_sequence).sequence_functions.at(i).param_string1.empty())
 			{
-				m_sequence_return_vector.at(i).append("(" + m_sequences.at(number).at(i).param_string1 + ")");
+				m_sequence_return_vector.at(i).append("(" + m_threads_list.at(m_currently_asked_sequence).sequence_functions.at(i).param_string1 + ")");
 			}
-			if (m_sequences.at(number).at(i).param_string2.empty())
+			if (m_threads_list.at(m_currently_asked_sequence).sequence_functions.at(i).param_string2.empty())
 			{
-				m_sequence_return_vector.at(i).append("(" + m_sequences.at(number).at(i).param_string2 + ")");
+				m_sequence_return_vector.at(i).append("(" + m_threads_list.at(m_currently_asked_sequence).sequence_functions.at(i).param_string2 + ")");
 			}
 		}
 
@@ -355,59 +334,74 @@ std::vector<std::string> Sequence_Handler::getSequenceFunctions(int number)
 
 }
 
-int Sequence_Handler::getSequenceStepAmmount(int number)
+int Sequence_Handler::getSequenceInfo_TotalSteps()
 {
-	return m_sequences.at(number).size();
+	return m_threads_list.at(m_currently_asked_sequence).sequence_functions.size();
 }
 
-std::string Sequence_Handler::getSequenceName(int number)
+std::string Sequence_Handler::getSequenceInfo_Name()
 {
-	if (number > m_sequences.size() - 1)
-	{
-		number = m_sequences.size() - 1;
-	}
-	return m_sequence_names.at(number);
+	return m_threads_list.at(m_currently_asked_sequence).sequence_name;
 }
 
 int Sequence_Handler::getNmbrOfRunningSequences()
 {
-	return m_running_sequences_counter;
+	return m_total_threads;
+}
+
+
+void Sequence_Handler::switchThroughSequences()
+{
+	m_currently_asked_sequence++;
+	if (m_currently_asked_sequence > m_threads_list.size() - 1)
+	{
+		m_currently_asked_sequence = m_total_threads - m_running_threads;
+	}
+}
+
+int Sequence_Handler::getAskedSequence()
+{
+	return m_currently_asked_sequence;
 }
 
 
 
-void Sequence_Handler::m_playSequenceN(std::string name, std::vector<std::vector<Seq_Part_Info>>& v_seq, int thread_nmbr)
+
+
+void Sequence_Handler::m_playSequence(std::vector<ThreadInfo>& r_thread_info, int thread_number)
 {
-	
-	for(int current_step = 0; current_step < v_seq.at(thread_nmbr).size(); current_step++)
+	int thread_nmbr = thread_number;
+
+	for (int current_step = 0; current_step < r_thread_info.at(thread_nmbr).sequence_functions.size(); current_step++)
 	{
 
-		m_threads_list.at(thread_nmbr).current_execution_step = current_step;
-		
+		r_thread_info.at(thread_nmbr).current_execution_step = current_step;
+
+
 		if (!m_threads_list.at(thread_nmbr).is_active)
 		{
 			break;
 		}
 
-		switch (v_seq.at(thread_nmbr).at(current_step).type)
+		switch (r_thread_info.at(thread_nmbr).sequence_functions.at(current_step).type)
 		{
 			//wait functions in different time units: milliseconds, seconds, minutes, hours
 		case SEQ_FUNCTION_TYPE::WAIT_MS:
 		{
-			std::this_thread::sleep_for(std::chrono::milliseconds(v_seq.at(thread_nmbr).at(current_step).param_int1));
+			std::this_thread::sleep_for(std::chrono::milliseconds(r_thread_info.at(thread_nmbr).sequence_functions.at(current_step).param_int1));
 		}break;
 
 		case SEQ_FUNCTION_TYPE::WAIT_S:
 		{
-			std::this_thread::sleep_for(std::chrono::seconds(v_seq.at(thread_nmbr).at(current_step).param_int1));
+			std::this_thread::sleep_for(std::chrono::seconds(r_thread_info.at(thread_nmbr).sequence_functions.at(current_step).param_int1));
 		}break;
 		case SEQ_FUNCTION_TYPE::WAIT_MIN:
 		{
-			std::this_thread::sleep_for(std::chrono::minutes(v_seq.at(thread_nmbr).at(current_step).param_int1));
+			std::this_thread::sleep_for(std::chrono::minutes(r_thread_info.at(thread_nmbr).sequence_functions.at(current_step).param_int1));
 		}break;
 		case SEQ_FUNCTION_TYPE::WAIT_H:
 		{
-			std::this_thread::sleep_for(std::chrono::hours(v_seq.at(thread_nmbr).at(current_step).param_int1));
+			std::this_thread::sleep_for(std::chrono::hours(r_thread_info.at(thread_nmbr).sequence_functions.at(current_step).param_int1));
 		}break;
 
 		//wait until specific time. Format: HHMM --> 1235 =  12:35, uses two int parameters
@@ -419,8 +413,8 @@ void Sequence_Handler::m_playSequenceN(std::string name, std::vector<std::vector
 			std::cout << "Starting to wait at: " << std::put_time(&time_struct, "%H:%M:%S") << std::endl;
 
 
-			int hour = v_seq.at(thread_nmbr).at(current_step).param_int1;
-			int minute = v_seq.at(thread_nmbr).at(current_step).param_int1;
+			int hour = r_thread_info.at(thread_nmbr).sequence_functions.at(current_step).param_int1;
+			int minute = r_thread_info.at(thread_nmbr).sequence_functions.at(current_step).param_int1;
 
 			bool time_reached = false;
 			do
@@ -439,14 +433,14 @@ void Sequence_Handler::m_playSequenceN(std::string name, std::vector<std::vector
 		//Jump to a specific position of the sequence
 		case SEQ_FUNCTION_TYPE::JUMP_TO:
 		{
-			current_step = v_seq.at(thread_nmbr).at(current_step).param_int1 -1;//Need do decrease the target number by one because the for loop increases the step counter before the target function will be executet.
+			current_step = r_thread_info.at(thread_nmbr).sequence_functions.at(current_step).param_int1 - 1;//Need do decrease the target number by one because the for loop increases the step counter before the target function will be executet.
 		}break;
 
 		//Progress if the input criteria of ONE input is met
 		case SEQ_FUNCTION_TYPE::PROGRESS_IF_1:
 		{
-			int should_be_value = v_seq.at(thread_nmbr).at(current_step).param_int1;
-			std::string input_to_check1 = v_seq.at(thread_nmbr).at(current_step).param_string1;
+			int should_be_value = r_thread_info.at(thread_nmbr).sequence_functions.at(current_step).param_int1;
+			std::string input_to_check1 = r_thread_info.at(thread_nmbr).sequence_functions.at(current_step).param_string1;
 			bool check_digital = false;
 			int return_value;
 
@@ -485,9 +479,9 @@ void Sequence_Handler::m_playSequenceN(std::string name, std::vector<std::vector
 		//Use the conditions from HW_Con::getDoubleInputState
 		case SEQ_FUNCTION_TYPE::PROGRESS_IF_2:
 		{
-			int should_be_value = v_seq.at(thread_nmbr).at(current_step).param_int1;
-			std::string input_to_check1 = v_seq.at(thread_nmbr).at(current_step).param_string1;
-			std::string input_to_check2 = v_seq.at(thread_nmbr).at(current_step).param_string2;
+			int should_be_value = r_thread_info.at(thread_nmbr).sequence_functions.at(current_step).param_int1;
+			std::string input_to_check1 = r_thread_info.at(thread_nmbr).sequence_functions.at(current_step).param_string1;
+			std::string input_to_check2 = r_thread_info.at(thread_nmbr).sequence_functions.at(current_step).param_string2;
 			int return_value = 0;
 
 			//Can only be used on digital inputs
@@ -504,22 +498,21 @@ void Sequence_Handler::m_playSequenceN(std::string name, std::vector<std::vector
 
 		case SEQ_FUNCTION_TYPE::GET_DIGITAL_INPUT:
 		{
-			m_p_hw_con->getDigitalInputState(v_seq.at(thread_nmbr).at(current_step).param_string1);
+			m_p_hw_con->getDigitalInputState(r_thread_info.at(thread_nmbr).sequence_functions.at(current_step).param_string1);
 		}break;
 
 		case SEQ_FUNCTION_TYPE::SWITCH_DIGITAL_OUTPUT:
 		{
-			m_p_hw_con->switchDigitalOutputState(v_seq.at(thread_nmbr).at(current_step).param_string1);
+			m_p_hw_con->switchDigitalOutputState(r_thread_info.at(thread_nmbr).sequence_functions.at(current_step).param_string1);
 		}break;
 		case SEQ_FUNCTION_TYPE::SET_DIGITAL_OUTPUT:
 		{
-			m_p_hw_con->setDigitalOutputState(v_seq.at(thread_nmbr).at(current_step).param_int1, v_seq.at(thread_nmbr).at(current_step).param_string1);
+			m_p_hw_con->setDigitalOutputState(r_thread_info.at(thread_nmbr).sequence_functions.at(current_step).param_int1, r_thread_info.at(thread_nmbr).sequence_functions.at(current_step).param_string1);
 		}break;
 		}
 
 
 	}
-
 }
 
 std::string Sequence_Handler::m_getProjectDirPath()
